@@ -16,18 +16,18 @@
  *
  * @example
  * # Consolidate from a specific session (auto-discovers all artifact dirs)
- * npx tsx skills/research-online/scripts/consolidate-research.ts \
+ * npx tsx .agents/skills/research-online/scripts/consolidate-research.ts \
  *   --session-dir .researches/2026-02-11T134626Z \
  *   --query "Example research question" \
  *   --format thematic
  *
  * # Consolidate Firecrawl reports only (legacy mode)
- * npx tsx skills/research-online/scripts/consolidate-research.ts \
+ * npx tsx .agents/skills/research-online/scripts/consolidate-research.ts \
  *   --input-dir .researches/2026-02-11T134626Z/firecrawl/reports \
  *   --query "Example research question" \
  *   --format thematic
  *
- * @testing Manual — npx tsx skills/research-online/scripts/consolidate-research.ts
+ * @testing Manual — npx tsx .agents/skills/research-online/scripts/consolidate-research.ts
  * @see skills/research-online/SKILL.md - Research workflow that owns this consolidation surface.
  * @see skills/research-online/scripts/save-web-research.ts - Web tool result persistence sibling script.
  * @documentation reviewed=2026-05-18 standard=FILE_OVERVIEW_STANDARDS_TYPESCRIPT@3
@@ -972,32 +972,32 @@ function printUsage(): void {
   console.log(`
 Usage:
   # Consolidate from a specific session (auto-discovers all artifact dirs)
-  npx tsx skills/research-online/scripts/consolidate-research.ts \\
+  npx tsx .agents/skills/research-online/scripts/consolidate-research.ts \\
     --session-dir .researches/2026-02-11T134626Z \\
     --query "Research question" \\
     --format thematic
 
   # Consolidate the latest session automatically
-  npx tsx skills/research-online/scripts/consolidate-research.ts \\
+  npx tsx .agents/skills/research-online/scripts/consolidate-research.ts \\
     --auto-session \\
     --query "Research question" \\
     --format thematic
 
   # Consolidate from specific directories (legacy)
-  npx tsx skills/research-online/scripts/consolidate-research.ts \\
+  npx tsx .agents/skills/research-online/scripts/consolidate-research.ts \\
     --input-dir .researches/2026-02-11T134626Z/firecrawl/reports \\
     --query "Research question" \\
     --format thematic
 
   # Consolidate from explicit files
-  npx tsx skills/research-online/scripts/consolidate-research.ts \\
+  npx tsx .agents/skills/research-online/scripts/consolidate-research.ts \\
     --input-file /tmp/report-1.json \\
     --input-file /tmp/report-2.json \\
     --query "Research question" \\
     --format source-based
 
   # Consolidate from a specific session with content cleaning
-  npx tsx skills/research-online/scripts/consolidate-research.ts \
+  npx tsx .agents/skills/research-online/scripts/consolidate-research.ts \
     --session-dir .researches/2026-02-11T134626Z \
     --query "Research question" \
     --format thematic \

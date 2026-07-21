@@ -4,7 +4,7 @@
  * `research-online/SKILL.md` research workflow; agents invoke this after
  * Firecrawl sessions to capture raw results, metadata, and documentation artifacts.
  *
- * @testing CLI manual: npx tsx skills/research-online/scripts/save-research.ts
+ * @testing CLI manual: npx tsx .agents/skills/research-online/scripts/save-research.ts
  * @see skills/research-online/SKILL.md - Skill workflow documentation for persisting Firecrawl research artifacts.
  * @documentation reviewed=2026-04-30 standard=FILE_OVERVIEW_STANDARDS_TYPESCRIPT@3
  */
@@ -194,10 +194,10 @@ function listSessions(): void {
 function printUsage(): void {
   console.log(`
 Usage:
-  npx tsx skills/research-online/scripts/save-research.ts --query "Research topic" --results /tmp/results.json
-  npx tsx skills/research-online/scripts/save-research.ts --query "Research topic" --results-dir /tmp/raw-results
-  npx tsx skills/research-online/scripts/save-research.ts --query "Research topic" --session-dir ".researches/2026-02-11T134626Z" --results /tmp/results.json
-  npx tsx skills/research-online/scripts/save-research.ts --list
+  npx tsx .agents/skills/research-online/scripts/save-research.ts --query "Research topic" --results /tmp/results.json
+  npx tsx .agents/skills/research-online/scripts/save-research.ts --query "Research topic" --results-dir /tmp/raw-results
+  npx tsx .agents/skills/research-online/scripts/save-research.ts --query "Research topic" --session-dir ".researches/2026-02-11T134626Z" --results /tmp/results.json
+  npx tsx .agents/skills/research-online/scripts/save-research.ts --list
 
 Options:
   --query, -q        Research query or question

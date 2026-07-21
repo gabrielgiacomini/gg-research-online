@@ -164,7 +164,7 @@ When documentation lives as tracked files in a GitHub repository:
 - Do not treat blob-page `firecrawl scrape` markdown as verbatim file content.
 
 ```bash
-npx tsx skills/research-online/scripts/archive-github-repo-docs.ts \
+npx tsx .agents/skills/research-online/scripts/archive-github-repo-docs.ts \
   --session-dir ".researches/<timestamp>" \
   --github-repo "owner/repo" \
   --branch "main" \

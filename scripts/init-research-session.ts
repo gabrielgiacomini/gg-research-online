@@ -5,12 +5,12 @@
  *
  * @example
  * ```bash
- * npx tsx skills/research-online/scripts/init-research-session.ts \
+ * npx tsx .agents/skills/research-online/scripts/init-research-session.ts \
  *   --query "OpenRouter model pricing" \
  *   --metadata '{"priority":"high"}'
  * ```
  *
- * @testing CLI manual: npx tsx skills/research-online/scripts/init-research-session.ts --query "OpenRouter model pricing"
+ * @testing CLI manual: npx tsx .agents/skills/research-online/scripts/init-research-session.ts --query "OpenRouter model pricing"
  * @see skills/research-online/SKILL.md - Skill workflow documentation for Firecrawl-backed research sessions.
  * @documentation reviewed=2026-04-30 standard=FILE_OVERVIEW_STANDARDS_TYPESCRIPT@3
  */
@@ -28,7 +28,7 @@ import { ensureResearchSession, isRecord, type Metadata } from "./research-sessi
 function printUsage(): void {
   console.log(`
 Usage:
-  npx tsx skills/research-online/scripts/init-research-session.ts --query "Research topic"
+  npx tsx .agents/skills/research-online/scripts/init-research-session.ts --query "Research topic"
 
 Options:
   --query, -q      Research query or question

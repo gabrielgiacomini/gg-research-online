@@ -6,7 +6,7 @@
  * technical prose about cookies, settings, scheduling, and copy-related APIs stays intact (no false positives).
  * Flow: build harness row -> cleanWebContent({ source: "fetch" }) -> measure reduction -> assert thresholds and substrings.
  *
- * @testing CLI: npx tsx skills/research-online/scripts/clean-web-content.test.ts
+ * @testing CLI: npx tsx .agents/skills/research-online/scripts/clean-web-content.test.ts
  * @see skills/research-online/scripts/clean-web-content.ts - Normalization implementation under test whose fetch-sourced stripping rules and heuristics these scenarios exercise end to end.
  * @documentation reviewed=2026-05-22 standard=FILE_OVERVIEW_STANDARDS_TYPESCRIPT@3
  */

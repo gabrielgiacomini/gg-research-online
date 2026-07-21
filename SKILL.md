@@ -200,21 +200,21 @@ firecrawl scrape "https://docs.nextjs.org/14" --format html \
 Consolidate with session auto-discovery (recommended — picks up firecrawl, web-search, web-fetch, and web-research dirs automatically):
 
 ```bash
-npx tsx skills/research-online/scripts/consolidate-research.ts \
+npx tsx .agents/skills/research-online/scripts/consolidate-research.ts \
   --session-dir .researches/<timestamp> \
   --query "What changed in Next.js 15?" \
   --format thematic
 
 # Content cleaning is enabled by default during consolidation.
 # Use --no-clean to disable it when raw content is needed:
-npx tsx skills/research-online/scripts/consolidate-research.ts \
+npx tsx .agents/skills/research-online/scripts/consolidate-research.ts \
   --session-dir .researches/<timestamp> \
   --query "What changed in Next.js 15?" \
   --format thematic \
   --no-clean
 
 # Or consolidate the latest session automatically:
-npx tsx skills/research-online/scripts/consolidate-research.ts \
+npx tsx .agents/skills/research-online/scripts/consolidate-research.ts \
   --auto-session \
   --query "What changed in Next.js 15?" \
   --format thematic
@@ -223,7 +223,7 @@ npx tsx skills/research-online/scripts/consolidate-research.ts \
 Consolidate from specific directories (legacy, Firecrawl-only):
 
 ```bash
-npx tsx skills/research-online/scripts/consolidate-research.ts \
+npx tsx .agents/skills/research-online/scripts/consolidate-research.ts \
   --input-dir .researches/<timestamp>/firecrawl/reports \
   --query "What changed in Next.js 15?" \
   --format thematic
@@ -233,20 +233,20 @@ Save built-in web tool results into a session:
 
 ```bash
 # Save web_search results
-npx tsx skills/research-online/scripts/save-web-research.ts \
+npx tsx .agents/skills/research-online/scripts/save-web-research.ts \
   --query "Drizzle ORM connection pooling" \
   --source search \
   --content '{"results": [...]}'
 
 # Save web_fetch content (content cleaning enabled by default for fetch sources)
-npx tsx skills/research-online/scripts/save-web-research.ts \
+npx tsx .agents/skills/research-online/scripts/save-web-research.ts \
   --query "Drizzle ORM connection pooling" \
   --source fetch \
   --content "$(cat page.md)" \
   --url "https://orm.drizzle.team/docs/connect-overview"
 
 # Save web_fetch content with raw content preserved (--no-clean)
-npx tsx skills/research-online/scripts/save-web-research.ts \
+npx tsx .agents/skills/research-online/scripts/save-web-research.ts \
   --query "Drizzle ORM connection pooling" \
   --source fetch \
   --content "$(cat page.md)" \
@@ -676,7 +676,7 @@ Keep `.researches/.gitkeep` committed and publish completed generated session fo
 | `scripts/save-research.ts` | Import Firecrawl artifacts into a session | `--query`, `--results`, `--results-dir`, `--session-dir`, `--list` |
 | `scripts/save-web-research.ts` | Import web_search/web_fetch results into a session; content cleaning enabled by default for fetch/hybrid (`--no-clean` disables) | `--query`, `--source`, `--results`, `--content`, `--url`, `--clean`, `--no-clean`, `--session-dir`, `--metadata` |
 | `scripts/clean-web-content.ts` | Strip navigation chrome, cookie banners, footers, edit links, feedback prompts, copy buttons, pagination, inline TOCs, back-to-top links, sponsor sections, social prompts, newsletter CTAs from web content | `--content`, `--file`, `--output`, `--source`, `--no-cookie`, `--no-nav`, `--no-footer`, `--no-social`, `--no-newsletter`, `--no-edit-links`, `--no-feedback`, `--no-related`, `--no-copy-buttons`, `--no-pagination`, `--no-toc`, `--no-back-to-top`, `--no-sponsors`, `--no-whitespace` |
-| `scripts/clean-web-content.test.ts` | Regression tests for content cleaning: 10 removal tests + 8 false-positive guards | Run: `npx tsx skills/research-online/scripts/clean-web-content.test.ts` |
+| `scripts/clean-web-content.test.ts` | Regression tests for content cleaning: 10 removal tests + 8 false-positive guards | Run: `npx tsx .agents/skills/research-online/scripts/clean-web-content.test.ts` |
 | `scripts/consolidate-research.ts` | Deduplicate and merge reports into `consolidated.md` + `consolidated.json`. Content cleaning enabled by default; use `--no-clean` for raw output. Auto-discovers all artifact dirs with `--session-dir` or `--auto-session` | `--session-dir`, `--auto-session`, `--input-dir`, `--input-file`, `--query`, `--format`, `--no-clean`, `--no-dedupe`, `--no-publish`, `--output` |
 | `scripts/finalize-research-session.ts` | Publish a completed session with a scoped commit/push | `--session-dir`, `--latest`, `--dry-run` |
 | `scripts/archive-github-repo-docs.ts` | Archive GitHub repo docs with canonical markdown + HTML + optional screenshots | `--session-dir`, `--github-repo`, `--branch`, `--repo-dir`, `--screenshot-mode`, `--file`, `--files-from` |

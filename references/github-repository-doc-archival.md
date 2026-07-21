@@ -27,7 +27,7 @@ This yields three complementary artifacts: exact source text, exact rendered Git
 ## Use the Helper
 
 ```bash
-npx tsx skills/research-online/scripts/archive-github-repo-docs.ts \
+npx tsx .agents/skills/research-online/scripts/archive-github-repo-docs.ts \
   --session-dir ".researches/<timestamp>" \
   --github-repo "owner/repo" \
   --branch "main" \

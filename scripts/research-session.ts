@@ -12,7 +12,7 @@
  * console.log(layout.firecrawlDir);
  * ```
  *
- * @testing CLI manual: npx tsx skills/research-online/scripts/research-session.ts
+ * @testing CLI manual: npx tsx .agents/skills/research-online/scripts/research-session.ts
  * @see skills/research-online/SKILL.md - Skill workflow documentation for research session contracts.
  * @documentation reviewed=2026-04-30 standard=FILE_OVERVIEW_STANDARDS_TYPESCRIPT@3
  */

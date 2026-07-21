@@ -22,7 +22,7 @@
  * console.log(`Reduced from ${rawFetchOutput.length} to ${cleaned.length} chars`);
  * ```
  *
- * @testing CLI manual: npx tsx skills/research-online/scripts/clean-web-content.ts
+ * @testing CLI manual: npx tsx .agents/skills/research-online/scripts/clean-web-content.ts
  * @see skills/research-online/scripts/save-web-research.ts - CLI that uses this module.
  * @see skills/research-online/SKILL.md - Skill workflow documentation.
  * @documentation reviewed=2026-05-22 standard=FILE_OVERVIEW_STANDARDS_TYPESCRIPT@3
@@ -908,15 +908,15 @@ function main(): void {
     console.log(`
 Usage:
   # Clean content from a file
-  npx tsx skills/research-online/scripts/clean-web-content.ts \\
+  npx tsx .agents/skills/research-online/scripts/clean-web-content.ts \\
     --file /tmp/page.md --source fetch
 
   # Clean inline content
-  npx tsx skills/research-online/scripts/clean-web-content.ts \\
+  npx tsx .agents/skills/research-online/scripts/clean-web-content.ts \\
     --source fetch --content "# Page Title\\nCookie Notice\\nWe use cookies..."
 
   # Clean and write to output file
-  npx tsx skills/research-online/scripts/clean-web-content.ts \\
+  npx tsx .agents/skills/research-online/scripts/clean-web-content.ts \\
     --file /tmp/page.md --output /tmp/page-clean.md
 
 Options:

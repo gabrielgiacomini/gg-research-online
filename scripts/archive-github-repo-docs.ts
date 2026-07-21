@@ -6,7 +6,7 @@
  * available, otherwise falls back to raw GitHub URLs, snapshots rendered blob page HTML, and
  * captures screenshot evidence via Firecrawl.
  *
- * @testing CLI manual: npx tsx skills/research-online/scripts/archive-github-repo-docs.ts --session-dir ".researches/<timestamp>" --github-repo "owner/repo" --branch "main" --repo-dir "/path/to/local/clone" --file "README.md"
+ * @testing CLI manual: npx tsx .agents/skills/research-online/scripts/archive-github-repo-docs.ts --session-dir ".researches/<timestamp>" --github-repo "owner/repo" --branch "main" --repo-dir "/path/to/local/clone" --file "README.md"
  * @see skills/research-online/SKILL.md - Skill workflow that orchestrates this archiver.
  * @documentation reviewed=2026-04-30 standard=FILE_OVERVIEW_STANDARDS_TYPESCRIPT@3
  */
@@ -84,7 +84,7 @@ type ScreenshotPayload = {
 function printUsage(): void {
   console.log(`
 Usage:
-  npx tsx skills/research-online/scripts/archive-github-repo-docs.ts \\
+  npx tsx .agents/skills/research-online/scripts/archive-github-repo-docs.ts \\
     --session-dir ".researches/<timestamp>" \\
     --github-repo "owner/repo" \\
     --branch "main" \\

@@ -6,10 +6,10 @@
  * to commit and push research artifacts at session closeout.
  *
  * @example
- * npx tsx skills/research-online/scripts/finalize-research-session.ts \
+ * npx tsx .agents/skills/research-online/scripts/finalize-research-session.ts \
  *   --session-dir ".researches/2026-02-11T134626Z"
  *
- * @testing Manual — npx tsx skills/research-online/scripts/finalize-research-session.ts
+ * @testing Manual — npx tsx .agents/skills/research-online/scripts/finalize-research-session.ts
  * @see skills/research-online/SKILL.md - Firecrawl-first research workflow that owns session finalization.
  * @documentation reviewed=2026-04-30 standard=FILE_OVERVIEW_STANDARDS_TYPESCRIPT@3
  */
@@ -31,8 +31,8 @@ const SESSION_DIRECTORY_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{6}Z$/;
 function printUsage(): void {
   console.log(`
 Usage:
-  npx tsx skills/research-online/scripts/finalize-research-session.ts --session-dir ".researches/2026-02-11T134626Z"
-  npx tsx skills/research-online/scripts/finalize-research-session.ts --latest
+  npx tsx .agents/skills/research-online/scripts/finalize-research-session.ts --session-dir ".researches/2026-02-11T134626Z"
+  npx tsx .agents/skills/research-online/scripts/finalize-research-session.ts --latest
 
 Options:
   --session-dir      Explicit research session directory to publish

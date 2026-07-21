@@ -11,20 +11,20 @@
  * @example
  * ```bash
  * # Save a web_search result as JSON (no cleaning for search JSON)
- * npx tsx skills/research-online/scripts/save-web-research.ts \
+ * npx tsx .agents/skills/research-online/scripts/save-web-research.ts \
  *   --query "Better Auth vs NextAuth" \
  *   --source search \
  *   --results /tmp/search-results.json
  *
  * # Save a web_fetch result (content cleaning enabled by default)
- * npx tsx skills/research-online/scripts/save-web-research.ts \
+ * npx tsx .agents/skills/research-online/scripts/save-web-research.ts \
  *   --query "Drizzle ORM connection pooling" \
  *   --source fetch \
  *   --results /tmp/page-content.md \
  *   --url "https://orm.drizzle.team/docs/connect-overview"
  *
  * # Save a web_fetch result with cleaning disabled (raw content preserved)
- * npx tsx skills/research-online/scripts/save-web-research.ts \
+ * npx tsx .agents/skills/research-online/scripts/save-web-research.ts \
  *   --query "Drizzle ORM connection pooling" \
  *   --source fetch \
  *   --results /tmp/page-content.md \
@@ -32,7 +32,7 @@
  *   --no-clean
  * ```
  *
- * @testing CLI manual: npx tsx skills/research-online/scripts/save-web-research.ts --query "test" --source search --content '{}'
+ * @testing CLI manual: npx tsx .agents/skills/research-online/scripts/save-web-research.ts --query "test" --source search --content '{}'
  * @see skills/research-online/SKILL.md - Skill workflow documentation for research sessions.
  * @see skills/research-online/scripts/save-research.ts - Firecrawl artifact persistence.
  * @see skills/research-online/scripts/research-session.ts - Session layout library.
@@ -396,27 +396,27 @@ function printUsage(): void {
   console.log(`
 Usage:
   # Save web_search results from a file
-  npx tsx skills/research-online/scripts/save-web-research.ts \\
+  npx tsx .agents/skills/research-online/scripts/save-web-research.ts \\
     --query "Research topic" --source search --results /tmp/results.json
 
   # Save web_fetch results with a URL for filename generation
-  npx tsx skills/research-online/scripts/save-web-research.ts \\
+  npx tsx .agents/skills/research-online/scripts/save-web-research.ts \\
     --query "Research topic" --source fetch --results /tmp/page.md \\
     --url "https://example.com/docs"
 
   # Save inline content directly
-  npx tsx skills/research-online/scripts/save-web-research.ts \\
+  npx tsx .agents/skills/research-online/scripts/save-web-research.ts \\
     --query "Research topic" --source search \\
     --content '{"results": [...]}'
 
   # Save into an existing session
-  npx tsx skills/research-online/scripts/save-web-research.ts \\
+  npx tsx .agents/skills/research-online/scripts/save-web-research.ts \\
     --query "Research topic" --source fetch --content "Page content" \\
     --session-dir ".researches/2026-05-18T120000Z" --url "https://example.com"
 
 Options:
   # Save web_fetch content with URL-based filename, cleaning navigation chrome
-  npx tsx skills/research-online/scripts/save-web-research.ts \
+  npx tsx .agents/skills/research-online/scripts/save-web-research.ts \
     --query "Research topic" --source fetch --content "Page content" \
     --url "https://example.com/docs"
 
