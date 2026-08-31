@@ -1,14 +1,14 @@
 # Research Tool Selection Guide
 
-Tool selection follows a pragmatic decision tree. Use the simplest tool that answers the question:
+Tool selection follows a pragmatic decision tree. Use the simplest **available** tool that answers the question. `web_search` / `web_fetch` here mean whatever search and page-fetch tools the current harness exposes.
 
-1. **Quick lookup or discovery**: `web_search` / `web_fetch` — zero setup, always available, full content per result.
-2. **Structured extraction, site mapping, crawling**: Firecrawl CLI — advanced capabilities, requires install and auth.
-3. **Multi-source research**: Hybrid two-phase pattern — `web_search` for discovery, then Firecrawl for deep extraction.
+1. **Discovery and reads (default):** host `web_search` / `web_fetch` — any available search or fetch.
+2. **Mapping, crawl, schema, JS-browser (optional):** Firecrawl CLI or equivalent — only if already installed and authenticated, and only when host fetch cannot do the job.
+3. **Multi-source research:** host search for discovery, host fetch for deep-reads. Specialized scrape/map only if needed and present.
 
-When Firecrawl CLI is not installed or not authenticated, fall back to built-in web tools immediately. Do not block research for setup.
+Never block research for Firecrawl setup. Missing Firecrawl is not a failure of this skill.
 
-Set `FIRECRAWL_OUTPUT_DIR` to the active research session before running Firecrawl commands:
+If Firecrawl commands are used, set `FIRECRAWL_OUTPUT_DIR` to the active research session first:
 
 ```bash
 export FIRECRAWL_OUTPUT_DIR=".researches/<timestamp>/firecrawl/raw"
@@ -19,48 +19,55 @@ export FIRECRAWL_OUTPUT_DIR=".researches/<timestamp>/firecrawl/raw"
 ```text
 What do you need?
 |
-|-- Quick fact or discovery (no install needed)
-|   |-- Use: web_search
+|-- Quick fact or discovery
+|   |-- Use: host web_search
 |       |-- Need deeper content from a result?
-|           |-- web_fetch the URL for full page content
-|       |-- Need clean markdown or dual representation?
-|           |-- Firecrawl scrape --only-main-content (if available)
+|           |-- host web_fetch the URL
+|       |-- Need dual representation AND a scrape backend is already available?
+|           |-- optional Firecrawl scrape --only-main-content
 |
-|-- Find information (don't know exact URLs, need targeted discovery)
-|   |-- Use: web_search first, then firecrawl search --scrape for best results
-|   |   |-- Need page content from results?
-|   |   |   |-- web_fetch for single URL, or firecrawl search --scrape for batch
-|   |-- Need structured extraction?
-|       |-- firecrawl agent with --schema
+|-- Find information (don't know exact URLs)
+|   |-- Use: host web_search, then host web_fetch on 1-2 URLs
+|   |   |-- Do not switch search backends with the same query
+|   |-- Need structured extraction AND a schema backend is already available?
+|       |-- optional firecrawl agent with --schema; else fetch and parse
 |
 |-- Explore a website structure
-|   |-- Use: firecrawl map
-|       |-- Need content from discovered pages?
-|       |   |-- Use firecrawl crawl with include/exclude paths
-|       |-- Need specific pages only?
-|           |-- Use firecrawl scrape on selected URLs
+|   |-- Host fetch has no map equivalent
+|   |-- If Firecrawl (or equivalent) is already available: firecrawl map
+|       |-- Need content from discovered pages? crawl or scrape
+|   |-- Else: search `site:<domain> <topic>` and fetch listed URLs; note the gap
 |
 |-- Extract from known URLs
 |   |-- Single or few URLs
-|   |   |-- Use: web_fetch for quick reads, or firecrawl scrape for clean markdown
-|   |       |-- Need full content?
-|   |       |   |-- web_fetch (fastest) or firecrawl scrape --format markdown,html
-|   |       |-- Need structured extraction?
-|   |           |-- firecrawl agent --urls ... --schema ...
+|   |   |-- Use: host web_fetch
+|   |       |-- Optional Firecrawl scrape if already available and host fetch is noisy
+|   |       |-- Optional firecrawl agent --schema if structured JSON is required
 |   |
 |   |-- Many URLs from same site
-|       |-- Use: firecrawl crawl
+|       |-- Host fetch each selected URL, or optional firecrawl crawl if present
 |
 |-- Complex multi-step research
-    |-- Use: firecrawl agent --wait
-        |-- If interactions are required, use firecrawl browser
+    |-- Chain host searches first
+    |-- Optional firecrawl agent --wait / browser only if that backend is present
 ```
 
-## Command Summary
+## Host tools (default)
+
+| Goal | Primary tool |
+| --- | --- |
+| Search web | Host `web_search` (or equivalent) |
+| Read a known page | Host `web_fetch` (or equivalent) |
+| Persist artifacts | `save-web-research.ts` |
+| Consolidate | `consolidate-research.ts --auto-session` |
+
+## Optional Firecrawl commands
+
+Only when that CLI is already available. See SKILL.md for when Phase 2 is useful.
 
 | Goal | Primary Command | Typical Flags |
 | --- | --- | --- |
-| Search web | `firecrawl search "<query>"` | `--limit`, `--sources`, `--tbs`, `--scrape` |
+| Alternate search | `firecrawl search "<query>"` | `--limit`, `--sources`, `--tbs`, `--scrape` |
 | Scrape known page | `firecrawl scrape "<url>"` | `--format markdown,html`, `--only-main-content`, `--wait-for` |
 | Discover site URLs | `firecrawl map "<url>"` | `--search`, `--limit`, `--sitemap` |
 | Crawl section | `firecrawl crawl "<url>"` | `--wait`, `--limit`, `--max-depth`, `--include-paths` |
@@ -70,20 +77,22 @@ What do you need?
 
 ## Patterns
 
-### 1. Search First (Hybrid Pattern)
+### 1. Search First (Default Host Pattern)
 
-Start with `web_search` for discovery, then use Firecrawl for deep extraction:
+Start with host `web_search` for discovery, then host `web_fetch` for deep-reads:
 
 ```
-# Phase 1: Discovery with built-in tools
+# Phase 1: Discovery
 web_search: "site:docs.example.com auth"
 → identify 2-5 most relevant URLs from results
+→ web_fetch the 1-2 best URLs
 
-# Phase 2: Deep extraction with Firecrawl (if needed)
+# Phase 2: Optional specialized extraction (only if host fetch is insufficient
+# and Firecrawl is already available)
 firecrawl scrape "<best-url>" --only-main-content -o "$FIRECRAWL_OUTPUT_DIR/auth.md"
 ```
 
-Or use Firecrawl search when you need targeted batch results:
+Optional Firecrawl search when that CLI is present and host search is not enough:
 
 ```bash
 firecrawl search "site:docs.example.com auth" --limit 10 --json \
@@ -178,15 +187,15 @@ If browser fallback is required for GitHub pages, prefer explicit `firecrawl bro
 
 ## Cost and Reliability Guardrails
 
-1. Start with `web_search` for discovery — it's zero-setup and free.
-2. Use Firecrawl for deep extraction only when you need clean markdown, structured data, site mapping, or archival.
-3. Use `search`/`scrape`/`map` before `agent`.
+1. Start with host `web_search` for discovery and host `web_fetch` for known URLs.
+2. Use a specialized backend only when you need mapping, crawl, schema extraction, or JS-browser work that host fetch cannot do — and only if it is already available.
+3. If Firecrawl is in use: `search`/`scrape`/`map` before `agent`.
 4. Add explicit limits (`--limit`, `--max-depth`) for crawls.
-5. Use `--max-age` for cache reuse during iteration.
-6. Save output to files (`-o`) and inspect incrementally.
+5. Use `--max-age` for cache reuse during iteration (specialized backends).
+6. Save output to files (`-o` or `save-web-research.ts`) and inspect incrementally.
 7. Use `agent` only when deterministic commands cannot complete the task.
-8. For GitHub repo docs, spend Firecrawl credits on screenshot evidence, not canonical markdown capture.
-9. When Firecrawl is unavailable, `web_search` + `web_fetch` provides full content for most research needs.
-10. Use the hybrid two-phase pattern for multi-source research: `web_search` for discovery, Firecrawl for deep extraction of the best sources.
+8. For GitHub repo docs, do not spend specialized-backend credits on canonical markdown capture; use raw URLs or the archival helper.
+9. Host `web_search` + `web_fetch` is a complete default path, not a fallback.
+10. Multi-source research: host search for discovery, host fetch for the best sources; Phase 2 only if needed.
 11. Formulate specific, disambiguated queries before searching — see SKILL.md > Research Methodology > Query Formulation for heuristics.
 12. Evaluate source credibility before deep-reading — prioritize results matching 3+ strong signals (official docs, recent, code examples, first-party, canonical). See SKILL.md > Research Methodology > Source Evaluation.

@@ -5,15 +5,16 @@ description: when configuring web research — multi-source discovery, site mapp
 
 # GG → Research Online → Web Research
 
-> **Snapshot age:** collected 2026-04-30 (~3 days old as of today).
-> Verify release-sensitive answers with `firecrawl --help` or `firecrawl` before responding with high confidence.
+> Verify release-sensitive answers against live sources before responding with high confidence.
 
 ## Quick Start
 
+**Tool names in this skill:** `web_search` and `web_fetch` mean whatever search and page-fetch tools the current harness exposes (built-in, MCP, CLI, or otherwise). Names vary (`web_search`/`web_fetch`, `WebSearch`/`WebFetch`, `open_page`, browser fetch). Use what is available now. Do not require Firecrawl or any other named vendor.
+
 **Before searching, answer the 3 planning questions** in Research Planning below: what you need, what you already know, and what would be enough. Then follow these 5 steps:
 
-1. **Discover** — `web_search` with specific, disambiguated query. Scan titles+snippets first; don't read all results. If results reveal a more specific question, chain follow-up searches (see Research Methodology → Research Chaining).
-2. **Deep-read** — `web_fetch` only the 1–2 most relevant URLs. Content cleaning is on by default.
+1. **Discover** — Host `web_search` with a specific, disambiguated query. Scan titles+snippets first; don't read all results. If results reveal a more specific question, chain follow-up searches (see Research Methodology → Research Chaining).
+2. **Deep-read** — Host `web_fetch` only the 1–2 most relevant URLs. Content cleaning is on by default.
 3. **Evaluate** — Score each source on the 5-signal heuristic (official docs > GitHub repos > forums/blogs). See `references/source-evaluation.md`.
 4. **Synthesize** — Lead with findings, attribute every claim, resolve conflicts using the priority (official > community, recent > outdated, primary > secondary, consensus > outlier, verifiable > unverifiable), mark gaps explicitly. Verify against the Research Quality Checklist before delivering.
 5. **Save** — `save-web-research.ts` for artifacts, `consolidate-research.ts --auto-session` for deduped summary. Content cleaning is on by default.
@@ -22,7 +23,7 @@ If results are poor after 2–3 reformulations, follow the **Research Dead End P
 
 See **Research Methodology > Research Sufficiency** for when you have enough evidence to stop researching.
 
-For advanced research (crawling, mapping, structured JSON extraction, dual-representation archival), use Phase 2 with Firecrawl CLI. See Hybrid Two-Phase Research Pattern below.
+Host search/fetch is the default path. Specialized backends (Firecrawl CLI map/crawl/schema/browser, or any equivalent already available) are optional when host fetch cannot do the job. See Hybrid Two-Phase Research Pattern below.
 
 ## Research Planning
 
@@ -38,45 +39,45 @@ If you cannot answer #1, follow the Research Dead End Protocol: reformulate, swi
 
 Use this skill to run online research and return source-backed answers with reproducible artifacts.
 
-**Tool selection follows a pragmatic decision tree, not a blanket preference.** Both built-in web tools (`web_search`, `web_fetch`) and Firecrawl CLI have strengths; the skill routes to the right tool based on research complexity and Firecrawl availability.
+**Tool selection follows a pragmatic decision tree, not a vendor preference.** Use any host search and fetch that can run now. Specialized backends (Firecrawl CLI or equivalent) are optional extras, never a prerequisite.
 
 ### Tool Selection Decision Tree
 
 ```
-1. Is this a simple lookup or quick discovery query?
-   → YES: Use built-in web_search / web_fetch (zero setup, full content per result)
-   → NO: continue
+1. Is a host web search or page-fetch tool available?
+   → YES: Use it (default path). Continue only if the task still needs more.
+   → NO: Stop and report that no web search/fetch is available. Do not wait for a specialized backend.
 
-2. Does the task need structured extraction, site mapping, crawling, or session management?
-   → YES: Use Firecrawl CLI (if available)
-   → NO: Use built-in web tools
+2. Does the task need site mapping, multi-page crawl, schema extraction, or JS browser automation that host fetch cannot do?
+   → NO: Stay on host search/fetch. Save artifacts. Done.
+   → YES: continue
 
-3. Is Firecrawl CLI installed and authenticated? (run `firecrawl --status`)
-   → YES: Use Firecrawl CLI for advanced features
-   → NO: Fall back to built-in web tools; note the limitation in the synthesis
+3. Is a specialized backend (Firecrawl CLI or equivalent) already available?
+   → YES: Use it for those advanced steps only.
+   → NO: Complete with host tools; note the capability gap in the synthesis. Do not install or authenticate a backend mid-research.
 
-4. Need reproducible artifacts, multi-source archival, or dual-representation documentation?
-   → Always use Firecrawl CLI when available; otherwise document the gap.
+4. Need reproducible artifacts?
+   → Always save via save-web-research.ts / session scripts. Firecrawl output dirs are only for Firecrawl runs.
 ```
 
-**Key principle:** The best tool is the one that's available and sufficient for the task. Never block research waiting for Firecrawl setup when built-in tools can answer the question.
+**Key principle:** The best tool is the one that's available and sufficient. Never block research waiting for Firecrawl (or any other backend) when host search/fetch can answer the question.
 
 ### Hybrid Two-Phase Research Pattern
 
 For multi-source research where both breadth and depth matter, compose the tools in two phases:
 
-**Phase 1 — Discovery (built-in web tools):**
-1. Use `web_search` with the research query to discover relevant URLs.
+**Phase 1 — Discovery (host search/fetch, default):**
+1. Use host `web_search` with the research query to discover relevant URLs.
 2. Review result titles and snippets to identify the 2–5 most promising sources.
-3. Use `web_fetch` on the **most promising 1–2 URLs only** for immediate deep-reads. Do not fetch all results — selectivity reduces context noise and improves synthesis quality.
-4. If the answers are sufficient, deliver the synthesis — no Firecrawl needed.
+3. Use host `web_fetch` on the **most promising 1–2 URLs only** for immediate deep-reads. Do not fetch all results — selectivity reduces context noise and improves synthesis quality.
+4. If the answers are sufficient, deliver the synthesis — no specialized backend needed.
 
-**Phase 2 — Deep extraction (Firecrawl CLI, when available):**
-5. For the best URLs from Phase 1 that need structured extraction, clean markdown, or archival:
+**Phase 2 — Deep extraction (optional specialized backend):**
+5. Only if host fetch cannot produce clean extraction, structured JSON, site maps, or crawls **and** a backend such as Firecrawl CLI is already available:
    ```bash
    firecrawl scrape "<url>" --only-main-content --format markdown
    ```
-6. For multi-page sites discovered in Phase 1, map the structure:
+6. For multi-page sites that need mapping (host fetch has no equivalent):
    ```bash
    firecrawl map "<site-root>" --search "<topic>"
    ```
@@ -84,15 +85,15 @@ For multi-source research where both breadth and depth matter, compose the tools
 
 **When to skip Phase 2:**
 - Phase 1 provided sufficient answers.
-- Firecrawl is not installed or authenticated.
-- The research doesn't need reproducible artifacts or dual-representation archival.
+- No specialized backend is installed or authenticated.
+- The research doesn't need mapping, crawl, schema extraction, or dual-representation archival.
 
-**When Phase 2 is essential:**
-- Research needs structured JSON extraction (`firecrawl agent --schema`).
+**When Phase 2 is useful (only if a backend is already available):**
+- Research needs structured JSON extraction (`firecrawl agent --schema` or equivalent).
 - Research needs site-wide mapping or crawling.
-- Research needs reproducible, timestamped artifacts for audit or handoff.
+- Research needs dual-representation archival that host fetch cannot produce.
 
-This pattern leverages the zero-setup, always-available advantage of built-in tools for discovery, while reserving Firecrawl's credit budget and advanced capabilities for the deep-extraction tasks where they uniquely excel.
+This pattern uses always-available host tools for discovery, and spends specialized-backend budget only on the extraction tasks those backends uniquely cover.
 
 #### Search-Then-Selective-Fetch (Key Efficiency Pattern)
 
@@ -111,18 +112,17 @@ This pattern leverages the zero-setup, always-available advantage of built-in to
 ✅ web_search → scan titles + snippets → select 1-2 best → web_fetch → synthesize
 ```
 
-**When to fetch more:** If the top 2 results don't answer the question, expand to results 3–5. If none do, refine the search query or move to Firecrawl Phase 2. If results answer the broad question but reveal a more specific question, chain follow-up searches (see **Research Methodology → Research Chaining**). See **Research Methodology → Research Sufficiency** for stopping criteria by query type.
+**When to fetch more:** If the top 2 results don't answer the question, expand to results 3–5. If none do, refine the search query. Escalate to Phase 2 only if host fetch is insufficient **and** a specialized backend is already available. If results answer the broad question but reveal a more specific question, chain follow-up searches (see **Research Methodology → Research Chaining**). See **Research Methodology → Research Sufficiency** for stopping criteria by query type.
 
 For a direct command lookup, see [Quick Commands](#quick-commands) below.
 
-## Relationship to firecrawl
+## Relationship to specialized backends
 
-`research-online/SKILL.md` is the workflow and archival layer; `firecrawl` is the low-level CLI primer.
+`research-online/SKILL.md` is the workflow and archival layer. It does not depend on Firecrawl.
 
-- Use `research-online/SKILL.md` when the task is to run an end-to-end research session: initialize a timestamped `.researches/<timestamp>/` directory, collect multi-source evidence, consolidate findings, and publish a reproducible artifact set.
-- Use `firecrawl` when the task is to look up exact Firecrawl CLI command syntax, flag semantics, install/auth steps, or version-specific behavior in isolation.
-
-A research session typically loads `firecrawl` on-demand for command-level detail (see `Non-Negotiable Policy` item 8 and `REFINE_FIRECRAWL_WORKFLOW` in the routing options).
+- Use this skill when the task is to run an end-to-end research session: initialize a timestamped `.researches/<timestamp>/` directory, collect multi-source evidence with **any** available search/fetch, consolidate findings, and publish a reproducible artifact set.
+- If a sibling `firecrawl` skill (or another map/crawl/schema/browser primer) is installed **and** that backend is already available, load it on-demand for command-level syntax only.
+- Absence of Firecrawl is not a blocker. Host search/fetch is a complete default path.
 
 ## When to Use This Skill
 
@@ -138,22 +138,22 @@ A research session typically loads `firecrawl` on-demand for command-level detai
 
 - The question can be answered from the local codebase or committed documentation.
 - The user explicitly asks for opinion or creative writing without factual grounding.
-- A sibling expert skill (e.g., `firecrawl`) already covers the specific tool surface.
+- A sibling expert skill already covers a specific tool surface in isolation (for example Firecrawl CLI syntax). This skill still owns the research session.
 
 ## Common Misconceptions
 
 | # | Misconception | Correction | Key concept |
 |---|---------------|------------|-------------|
-| 1 | Firecrawl should always be tried before built-in web tools | Use the right tool for the task: built-in for quick discovery, Firecrawl for advanced research. Never block research waiting for Firecrawl setup. | Pragmatic tool selection |
+| 1 | Firecrawl (or another named vendor) is required for this skill | Host search/fetch is the default. Specialized backends are optional extras when already available. Never block research waiting for setup. | Pragmatic tool selection |
 | 2 | One documentation format is enough | Keep both markdown and HTML for documentation targets | Dual-representation contract |
 | 3 | `firecrawl browser` shorthand is reliable | It is version-dependent and brittle; prefer explicit commands | Browser fallback fragility |
 | 4 | GitHub blob-page markdown is clean source text | It includes GitHub chrome; use `raw.githubusercontent.com` or local clone | Hybrid archival pattern |
 | 5 | Research sessions do not need to be published | Publish completed sessions by default unless the user says otherwise | Scoped artifact publish |
-| 6 | Built-in web tools are inferior to Firecrawl | Built-in tools return full page content in one call, require zero setup, and are always available. They beat Firecrawl for simple queries. | Tool complementarity |
+| 6 | Host web tools are inferior to Firecrawl | Host search/fetch is the default path: zero extra setup, works on any harness that exposes search or fetch. Specialized backends add mapping/crawl/schema/browser only. | Tool complementarity |
 | 7 | All `web_search` results should be read in full | Scan titles and snippets first, then `web_fetch` only the 1-2 most relevant URLs. Reading all results in full wastes context and introduces noise. Use `save-web-research.ts` to persist all results for reproducibility. | Selective fetch |
 | 8 | Search query quality doesn't matter — the tool returns the best results anyway | Query formulation is the single highest-leverage research skill. A specific, disambiguated query returns far more relevant results than a vague one. Reformulate before fetching more. | Query formulation |
 | 9 | Any source that matches the topic is equally good | Source evaluation separates authoritative answers from noise. Prioritize official docs, GitHub repos, and version-qualified sources over forums and SEO blogs. | Source evaluation |
-| 10 | If search fails, try a different search tool | If `web_search` returns poor results, `firecrawl search` with the same query will also return poor results. Reformulate the query first, then consider switching tools. | Query reformulation |
+| 10 | If search fails, try a different search tool | If host search returns poor results, another search backend with the same query will also return poor results. Reformulate the query first, then consider switching tools. | Query reformulation |
 | 11 | More searches always produce better results | After 2-3 failed reformulations, continuing to search wastes context and credits. Follow the Research Dead End Protocol: classify the failure, switch strategies, document the gap. | Dead end protocol |
 | 12 | More sources always produce better syntheses | 2 independent sources that agree is sufficient for most questions. 3+ sources confirming the same answer is confirmation, not improvement. Stop when you have convergent evidence, an official source, or a version-qualified answer. See Research Methodology → Research Sufficiency. | Research sufficiency |
 | 13 | Research should start with a search | Research should start with a plan. Without a one-sentence research question, knowledge of what you already know, and a stopping rule, searches are unfocused and results are noisy. See Research Planning. | Research planning |
@@ -163,14 +163,14 @@ A research session typically loads `firecrawl` on-demand for command-level detai
 
 **Hybrid discovery pattern (recommended for most research):**
 
-1. Discover with `web_search`, then deep-read with `web_fetch` or Firecrawl:
+1. Discover with host `web_search`, then deep-read with host `web_fetch`:
 
 ```
 web_search: "What changed in Next.js 15?"
 → scan titles + snippets (don't read all results in full)
 → select 1-2 most relevant URLs
 web_fetch: top URL for deep content
-→ if structured extraction or archival is needed:
+→ optional, only if host fetch is insufficient AND a specialized backend is already available:
    firecrawl scrape "<url>" --only-main-content --format markdown
 ```
 
@@ -180,7 +180,7 @@ Initialize a research session:
 npm run research:session:init -- --query "What changed in Next.js 15?"
 ```
 
-Search first, then deep-dive:
+Optional Firecrawl search (only if that CLI is already available and host search is not enough):
 
 ```bash
 export FIRECRAWL_OUTPUT_DIR=".researches/<timestamp>/firecrawl/raw"
@@ -188,7 +188,7 @@ firecrawl search "site:nextjs.org Next.js 15" --scrape --limit 10 --json \
   -o "$FIRECRAWL_OUTPUT_DIR/search.json"
 ```
 
-Scrape documentation in both markdown and HTML:
+Optional dual-representation scrape (same condition):
 
 ```bash
 firecrawl scrape "https://docs.nextjs.org/14" --format markdown \
@@ -197,7 +197,7 @@ firecrawl scrape "https://docs.nextjs.org/14" --format html \
   -o ".researches/<timestamp>/documentation/html/nextjs-14.html"
 ```
 
-Consolidate with session auto-discovery (recommended — picks up firecrawl, web-search, web-fetch, and web-research dirs automatically):
+Consolidate with session auto-discovery (picks up web-search, web-fetch, web-research, and firecrawl dirs if present):
 
 ```bash
 npx tsx .agents/skills/research-online/scripts/consolidate-research.ts \
@@ -220,7 +220,7 @@ npx tsx .agents/skills/research-online/scripts/consolidate-research.ts \
   --format thematic
 ```
 
-Consolidate from specific directories (legacy, Firecrawl-only):
+Consolidate from specific directories (legacy, single input dir):
 
 ```bash
 npx tsx .agents/skills/research-online/scripts/consolidate-research.ts \
@@ -229,7 +229,7 @@ npx tsx .agents/skills/research-online/scripts/consolidate-research.ts \
   --format thematic
 ```
 
-Save built-in web tool results into a session:
+Save host web tool results into a session:
 
 ```bash
 # Save web_search results
@@ -260,32 +260,32 @@ For the full command surface, see `references/tool-selection.md`.
 
 | Scenario | Best tool | Reasoning |
 |----------|-----------|----------|
-| Quick fact lookup or discovery | `web_search` | Zero setup, full content, fast |
-| Known URL to read | `web_fetch` | Clean extraction, no credits |
-| Do not know exact URLs, need targeted search | `web_search` then `web_fetch` for deeper reads | Full content in one call |
-| Need site structure | `firecrawl map` | No built-in equivalent |
-| Deep-dive a docs section | `firecrawl crawl` with `--limit` and `--max-depth` | Structured crawl with depth control |
-| Extract structured fields | `firecrawl agent --schema` | JSON schema extraction |
-| Complex autonomous exploration | `firecrawl agent --wait` | Multi-step web navigation |
-| JS-heavy or interactive page | `firecrawl browser` | Headless browser rendering |
+| Quick fact lookup or discovery | Host `web_search` | Default path; any available search |
+| Known URL to read | Host `web_fetch` | Default path; any available fetch |
+| Do not know exact URLs, need targeted search | Host `web_search` then `web_fetch` | Scan snippets, then selective deep-read |
+| Need site structure | Specialized backend `map` (e.g. Firecrawl) if already available | No host-tool equivalent |
+| Deep-dive a docs section | Host `web_fetch` on listed URLs; optional specialized `crawl` | Crawl only if backend is present |
+| Extract structured fields | Specialized `agent --schema` if already available | Otherwise fetch and parse manually |
+| Complex autonomous exploration | Specialized `agent --wait` if already available | Otherwise chain host searches |
+| JS-heavy or interactive page | Specialized `browser` if already available | Otherwise note the gap |
 | Multi-source archival for repo docs | `archive-github-repo-docs.ts` | Hybrid markdown + HTML capture |
-| Reproducible research session | Firecrawl CLI + `.researches/` | Session management, consolidation |
-| Need current facts, Firecrawl unavailable | `web_search` | Always-available fallback |
+| Reproducible research session | Session scripts + `.researches/` | Independent of which search/fetch ran |
+| No specialized backend installed | Host `web_search` / `web_fetch` | Complete default path, not a fallback |
 
-**Rule of thumb:** Use the simplest tool that suffices. `web_search`/`web_fetch` for quick discovery; `firecrawl` for advanced research requiring crawling, mapping, or structured extraction.
+**Rule of thumb:** Use the simplest available tool that suffices. Host search/fetch for discovery and reads. Specialized backends only for mapping, crawl, schema, or browser work they uniquely cover — and only if already available.
 
 ## Quick Decision Guide
 
 | Scenario | Recommended path | Trade-off |
 |----------|------------------|----------|
-| Need current facts from web | `web_search` first; `firecrawl search` if Firecrawl is available and you need targeted results | `web_search` is zero-setup; `firecrawl` is more targeted but requires install |
-| Deep docs extraction | `web_fetch` for single pages; `firecrawl map` then `firecrawl scrape` for multi-page sites | Built-in for speed; Firecrawl for reproducibility |
-| Structured data from known pages | `firecrawl agent --schema` | Requires Firecrawl; best for JSON extraction |
-| JS-heavy or interactive page | `firecrawl browser` | Slowest; only when other modes fail |
+| Need current facts from web | Host `web_search` | Default; no extra install |
+| Deep docs extraction | Host `web_fetch` for single pages; optional specialized `map`/`scrape` for multi-page sites | Host tools for speed; backend only if already available |
+| Structured data from known pages | Specialized `agent --schema` if already available; else fetch and parse | Schema extraction is optional |
+| JS-heavy or interactive page | Specialized `browser` if already available; else note the gap | Slowest; only when host fetch fails |
 | GitHub repo docs | `archive-github-repo-docs.ts` | Avoids blob-page markdown noise |
-| Quick question, no session needed | `web_search` | Fastest path to an answer |
-| Systematic multi-source research | Firecrawl CLI + `.researches/` session | Reproducibility, consolidation, archival |
-| Compose discovery + deep extraction | Phase 1: `web_search` for URL discovery → Phase 2: `firecrawl scrape` for clean extraction | Best of both: zero-setup discovery, targeted deep extraction |
+| Quick question, no session needed | Host `web_search` | Fastest path to an answer |
+| Systematic multi-source research | Host search/fetch + `.researches/` session | Reproducibility does not require Firecrawl |
+| Compose discovery + deep extraction | Phase 1: host `web_search` → Phase 2 only if needed and a backend is present | Default is host-only |
 
 ## Research Methodology
 
@@ -421,7 +421,7 @@ When 2-3 query reformulations still return poor results, follow this protocol in
    - **Language barrier:** The information may only be available in a different language. Try `web_search` with translated keywords.
 
 2. **Switch strategies, not tools:**
-   - If `web_search` returns poor results, don't switch to `firecrawl search` with the same query — **the query is the problem, not the tool.**
+   - If host `web_search` returns poor results, don't switch to another search backend with the same query — **the query is the problem, not the tool.**
    - Try **site-qualified search** first: `site:docs.example.com <topic>` targets official docs directly.
    - Try **version-qualified search**: `"<library> <version>" <feature>` targets release-specific information.
    - Try **error-quote search**: Paste the exact error message or its most unique fragment.
@@ -468,26 +468,24 @@ Knowing when to stop researching is as important as knowing how to research. Ove
 
 ## Non-Negotiable Policy
 
-1. **Choose the right tool for the task.** Use built-in `web_search`/`web_fetch` for quick discovery and simple queries. Use Firecrawl CLI for site mapping, crawling, structured extraction, and reproducible sessions. Never block research waiting for Firecrawl when built-in tools can answer the question.
-2. **If Firecrawl is needed, verify CLI readiness** with `firecrawl --status` before starting. If it fails, fall back to built-in web tools immediately — do not attempt to install or authenticate Firecrawl mid-research.
-3. Use `references/tool-selection.md` to locate the right Firecrawl command before broad reading; never reconstruct CLI flags or setup steps from memory.
-4. Start with the least expensive workflow (`web_search` for discovery, `firecrawl search`/`scrape` before `agent`/`browser`).
+1. **Host search/fetch is the default.** Use whatever `web_search`/`web_fetch` (or equivalent) the harness exposes. Specialized backends (Firecrawl CLI or equivalent) are optional for mapping, crawl, schema, and browser work they uniquely cover.
+2. **Never block on backend setup.** Do not run `firecrawl --status` as a pre-flight for ordinary research. If a specialized step is needed and the backend is missing, complete with host tools and note the gap — do not install or authenticate mid-research.
+3. Use `references/tool-selection.md` only when a specialized backend is already available and you need command syntax; never reconstruct CLI flags from memory.
+4. Start with the least expensive workflow (host search, then selective fetch, then specialized `search`/`scrape` before `agent`/`browser` if a backend is present).
 5. Load only the subset of `references/` the task requires. Do not read every file by default.
 6. Save research sessions under `.researches/<timestamp>/`; keep both markdown and HTML representations for documentation targets.
 7. Keep source attribution in every synthesis and consolidate with `scripts/consolidate-research.ts` before publishing.
-8. For any answer about Firecrawl CLI pricing, models, or current version: treat bundled data as likely stale and verify with `firecrawl --help` or `firecrawl` before stating specifics with high confidence.
-9. **When using built-in web tools for a Firecrawl-class task** (crawling, structured extraction, session archival), note the limitation in your synthesis and suggest a follow-up with Firecrawl when available.
+8. For any answer about a specialized backend's pricing, models, or current version: treat bundled data as likely stale and verify with that tool's `--help` before stating specifics with high confidence.
+9. **When host tools cannot cover mapping, crawl, schema, or JS-browser work,** note the limitation in the synthesis. Do not treat host-only research as incomplete.
 
 ## Workflow
 
 0. **Plan before searching.** Answer the 3 Research Planning questions: (1) What's your one-sentence research question? (2) What do you already know? (3) Which Research Sufficiency stopping rule applies? Do not skip to step 1 without a clear question.
 
 1. **Classify the research complexity.**
-   - **Simple** (quick lookup, single fact, comparison): Use `web_search` / `web_fetch` directly. Skip to step 7.
-   - **Advanced** (multi-source, structured extraction, site mapping, reproducible archival): Continue to step 2.
-2. **Verify Firecrawl availability** with `firecrawl --status`.
-   - If **available**: proceed with Firecrawl CLI.
-   - If **not available**: fall back to `web_search`/`web_fetch`. Note the limitation in your synthesis.
+   - **Simple** (quick lookup, single fact, comparison): Use host `web_search` / `web_fetch` directly. Skip to step 7.
+   - **Advanced** (multi-source, structured extraction, site mapping, reproducible archival): Continue to step 2 using host tools first.
+2. **Use host search/fetch.** Specialized backends are optional: use them only if host tools cannot cover mapping/crawl/schema/browser **and** the backend is already available. Never pre-flight `firecrawl --status` for ordinary research.
 3. Initialize the research session:
 
    ```bash
@@ -498,11 +496,11 @@ Knowing when to stop researching is as important as knowing how to research. Ove
 5. Collect data with the chosen tool targeting the active session folder.
    - **Formulate queries carefully** (see Research Methodology > Query Formulation). Start specific, broaden only if needed, and reformulate rather than fetch more on poor results.
    - **Evaluate sources** before deep-reading (see Research Methodology > Source Evaluation). Prioritize results matching 3+ strong signals (official docs, recent, code examples, authoritative, canonical).
-   - **Firecrawl**: Set `FIRECRAWL_OUTPUT_DIR=".researches/<timestamp>/firecrawl/raw"`.
-   - **Built-in web tools**: Capture results into `.researches/<timestamp>/documentation/markdown/` and `html/`.
+   - **Host web tools**: Capture results into `.researches/<timestamp>/` via `save-web-research.ts` (`web-search/`, `web-fetch/`, `documentation/markdown/` and `html/`).
+   - **Specialized backend (optional):** If Firecrawl CLI is used, set `FIRECRAWL_OUTPUT_DIR=".researches/<timestamp>/firecrawl/raw"`.
    - For documentation pages, keep both markdown and HTML representations.
    - For GitHub repository files, use `scripts/archive-github-repo-docs.ts` (see `references/github-repository-doc-archival.md`).
-6. If command details are unclear, consult `firecrawl` before expanding scope.
+6. If specialized-backend command details are unclear, consult that sibling primer before expanding scope. Do not treat a missing primer as a research blocker.
 7. Parallelize independent sources with harness workers when context or fan-out is high (see `references/harness-patterns.md`).
 8. Consolidate findings with `scripts/consolidate-research.ts`.
    - Content cleaning is on by default; use `--no-clean` to preserve raw content.
@@ -515,19 +513,18 @@ Knowing when to stop researching is as important as knowing how to research. Ove
 
 ### Reference Loading by Task Type
 
-For diagnostic requests, run `firecrawl --status` before loading any reference files. Load only the subset the task needs.
+Load only the subset the task needs. Do not run a specialized-backend status check before ordinary research.
 
 | Task type | Load these files | Skip |
 |-----------|-----------------|------|
-| Choose Firecrawl command | `tool-selection.md` | `consolidation-patterns.md` |
+| Choose a specialized-backend command (only if that backend is already available) | `tool-selection.md` | `consolidation-patterns.md` |
 | Parallelize research across sources | `harness-patterns.md` | `github-repository-doc-archival.md` |
 | Archive GitHub repository docs | `github-repository-doc-archival.md` | `harness-patterns.md` |
 | Consolidate subagent results | `consolidation-patterns.md` | `tool-selection.md` |
 | Evaluate source credibility | `source-evaluation.md` | `consolidation-patterns.md` |
 | Formulate effective queries | `query-formulation.md` + `source-evaluation.md` | `github-repository-doc-archival.md` |
 | Improve poor search results | `query-formulation.md` (reformulation techniques) | `source-evaluation.md` |
-| Diagnostic / inspection-first | Run `firecrawl --status` | All reference files |
-| Quick research (built-in tools only) | `tool-selection.md` (decision tree section) | `harness-patterns.md`, `github-repository-doc-archival.md` |
+| Quick research (host tools) | `query-formulation.md` + `source-evaluation.md` | `tool-selection.md`, `harness-patterns.md`, `github-repository-doc-archival.md` |
 | Save and consolidate artifacts | `consolidation-patterns.md` (session discovery) | `source-evaluation.md` |
 
 ## Completion Output Contract
@@ -564,7 +561,7 @@ After a research session is complete, include `Next steps:` followed by options 
 
 Required base option:
 
-- `CREATE_RESEARCH_DERIVED_EXPERT_SKILL`: Create a reusable expert skill from this research topic using the exact `.researches/<timestamp>/` payload (`consolidated.md`, `consolidated.json`, `firecrawl/raw`, `firecrawl/reports`, and `metadata.json`).
+- `CREATE_RESEARCH_DERIVED_EXPERT_SKILL`: Create a reusable expert skill from this research topic using the exact `.researches/<timestamp>/` payload (`consolidated.md`, `consolidated.json`, `web-search/`, `web-fetch/`, `metadata.json`, and any `firecrawl/` dirs if a specialized backend was used).
 
 Cross-skill routing options (generate dynamically based on surfaced signals):
 
@@ -572,7 +569,7 @@ Cross-skill routing options (generate dynamically based on surfaced signals):
 - `DEEPEN_RESEARCH_WITH_ONLINE_STUDY`: Route to `study/SKILL.md` when material unknowns remain.
 - `RESOLVE_COMPETING_APPROACHES`: Route to `decisions/SKILL.md` when tradeoffs are unresolved.
 - `SYNC_GUIDANCE_DOCUMENTATION`: Route to the `documentation-sync` workflow when policy or docs must be updated.
-- `REFINE_FIRECRAWL_WORKFLOW`: Route to `firecrawl` when CLI gaps or retrieval misses are found.
+- `REFINE_SPECIALIZED_BACKEND`: Route to a sibling primer (`firecrawl` or equivalent) only when that backend was used and command gaps remain.
 - `VALIDATE_RESEARCH_CLAIMS_IN_UI`: Route to the `playwright-cli` workflow when findings have user-facing behavior implications.
 - `TARGET_PRIMARY_DOC_RESEARCH`: Continue with `research-online/SKILL.md` using a tighter scope when source conflict or low confidence remains.
 
@@ -605,11 +602,11 @@ Use a timestamped session folder under `.researches/`:
     │   ├── markdown/
     │   └── screenshots/
     │       └── full-page/
-    ├── firecrawl/
+    ├── firecrawl/           ← only if a Firecrawl backend was used
     │   ├── raw/
     │   └── reports/
-    ├── web-search/          ← web_search result artifacts (JSON)
-    ├── web-fetch/           ← web_fetch result artifacts (markdown, HTML)
+    ├── web-search/          ← host search artifacts (JSON)
+    ├── web-fetch/           ← host fetch artifacts (markdown, HTML)
     ├── web-research/        ← hybrid search+fetch artifacts
     ├── metadata.json
     ├── subagent-reports/
@@ -621,18 +618,18 @@ Keep `.researches/.gitkeep` committed and publish completed generated session fo
 
 ## Common Pitfalls
 
-1. **Blocking research waiting for Firecrawl setup.** If Firecrawl is not installed, use built-in web tools immediately. Don't stop research to install and authenticate a CLI.
-2. **Using Firecrawl for simple lookups.** `web_search` returns full page content in one call with zero setup — use it for quick facts and discovery.
+1. **Blocking research waiting for Firecrawl (or any specialized backend).** Host search/fetch is the default. Don't stop research to install and authenticate a CLI.
+2. **Requiring a specialized backend for simple lookups.** Host `web_search` is the default for quick facts and discovery.
 3. **Keeping only markdown documentation without HTML backup.** Documentation targets require both representations for source fidelity.
 4. **Trusting GitHub blob-page scrape as canonical source text.** Blob-page markdown includes GitHub chrome; use `raw.githubusercontent.com` or a local clone for canonical text.
-5. **Forgetting to set `FIRECRAWL_OUTPUT_DIR` before batch commands.** Set it once per session to keep outputs organized.
-6. **Using `firecrawl agent` for simple searches.** `search` and `scrape` are cheaper and faster for known targets.
+5. **Forgetting to set `FIRECRAWL_OUTPUT_DIR` before Firecrawl batch commands.** Only relevant when that CLI is actually used; set it once per session.
+6. **Using `firecrawl agent` for simple searches.** If Firecrawl is in use, `search` and `scrape` are cheaper and faster for known targets. Host search is cheaper still.
 7. **Not scoping crawls with `--limit` and `--max-depth`.** Unbounded crawls are expensive and may hit rate limits.
-8. **Assuming built-in web tools are always inferior.** They are the right choice for quick discovery, single-page reads, and when Firecrawl is unavailable.
+8. **Treating host web tools as a fallback.** They are the default for discovery, single-page reads, and full research sessions. Specialized backends are extras.
 9. **Using vague or overly broad search queries.** "How to use X" returns marketing pages; "X v2 API configuration" returns targeted docs. Query formulation is the highest-leverage research skill.
 10. **Treating all sources as equally credible.** Official docs and GitHub repos outweigh random blog posts. Evaluate source strength before deep-reading.
 11. **Continuing to search after 2-3 failed reformulations.** If multiple reformulations return poor results, classify the dead end (too niche, too new, too ambiguous, language barrier) and either switch strategy or document the gap. Never waste credits or context on a failing approach.
-12. **Switching tools instead of reformulating queries.** If web_search returns poor results, firecrawl search with the same query will also return poor results. The query is the problem, not the tool — reformulate first, switch tools second.
+12. **Switching tools instead of reformulating queries.** If host search returns poor results, another search backend with the same query will also return poor results. The query is the problem, not the tool — reformulate first, switch tools second.
 13. **Over-researching after finding convergent evidence.** 2 independent sources that agree is sufficient for most questions. Continuing to search for 5+ sources on the same point wastes context and credits. See Research Methodology → Research Sufficiency for stopping criteria.
 14. **Skipping research planning and starting with a search.** Without a one-sentence research question, knowledge of what you already know, and a stopping rule, your first search is likely too broad. See Research Planning for the 3-question pre-search checklist.
 15. **Restarting from scratch on follow-up searches.** When initial results reveal a more specific question, chain the follow-up search carrying forward version numbers and key terms — don't discard what you already know. See Research Methodology → Research Chaining.
@@ -641,40 +638,41 @@ Keep `.researches/.gitkeep` committed and publish completed generated session fo
 
 | Symptom | Likely cause and fix |
 |---------|---------------------|
-| `firecrawl --status` fails or command not found | Firecrawl CLI is not installed. **Fall back to built-in web tools immediately.** Do not block research for setup. |
+| No host search or fetch tool is available | Report the gap. Do not block on installing Firecrawl or any other backend. |
+| `firecrawl` command not found (only relevant if you intended to use it) | Skip the specialized step. Continue with host search/fetch. |
 | `firecrawl scrape` markdown includes UI noise | Add `--only-main-content`. For GitHub repos, switch to raw URLs or the archival helper. |
 | `firecrawl browser` shorthand fails | Use explicit `firecrawl browser execute --node ...` instead of shorthand syntax. |
 | Screenshot capture returns no URL | Confirm the installed CLI supports `--format screenshot`. Escalate to browser mode if needed. |
 | Consolidation produces empty output | Verify the input directory contains `.json` or `.md` files and that `--query` is provided. |
 | Session folder does not auto-publish | The output must be inside `.researches/` with a valid `metadata.json`. Use `--no-publish` to skip intentionally. |
-| `web_search` or `web_fetch` returns no results | Try alternative query terms. For deep research, switch to Firecrawl `search --scrape` if available. |
-| `web_search` returns irrelevant results | Reformulate the query: add technology name, version/year qualifiers, or use exact error messages. See Research Methodology > Query Formulation. |
+| Host `web_search` or `web_fetch` returns no results | Try alternative query terms. Do not switch search backends with the same query. |
+| Host `web_search` returns irrelevant results | Reformulate the query: add technology name, version/year qualifiers, or use exact error messages. See Research Methodology > Query Formulation. |
 | Need to evaluate source credibility | Prioritize official docs, GitHub repos, and version-qualified sources. See Research Methodology > Source Evaluation for the 5-signal heuristic. |
 | Multiple reformulations return poor results | Classify the dead end (too niche, too new, too ambiguous) and follow the Research Dead End Protocol. Do not continue searching with the same strategy. |
-| `web_search` and `firecrawl search` both return poor results | The query is the problem, not the tool. Reformulate with site-qualified, version-qualified, or error-quote searches before switching tools. |
-| Need structured extraction but Firecrawl unavailable | Use `web_fetch` to get page content, then parse manually. Note the gap in the synthesis. |
+| Two different search backends both return poor results | The query is the problem, not the tool. Reformulate with site-qualified, version-qualified, or error-quote searches before switching tools. |
+| Need structured extraction but no specialized backend | Use host `web_fetch` to get page content, then parse manually. Note the gap in the synthesis. |
 
 ## Reliability and Cost Guardrails
 
-1. **Start with the simplest tool that answers the question.** `web_search` for quick facts; `firecrawl search` for targeted discovery.
-2. Use `--max-age` for cache hits during iterative debugging.
-3. Scope crawls aggressively (`--limit`, `--include-paths`, `--exclude-paths`).
-4. Use `firecrawl agent --schema` only when structured output is required.
-5. Treat `firecrawl agent` as a last resort and include timeout fallback logic.
-6. When using built-in web tools, save results to `.researches/<timestamp>/` for reproducibility.
-7. If Firecrawl is needed but unavailable, note the limitation and suggest follow-up with Firecrawl when available.
+1. **Start with the simplest available tool that answers the question.** Host `web_search` for discovery; host `web_fetch` for known URLs.
+2. If a specialized crawl/scrape backend is in use, prefer `--max-age` for cache hits during iterative debugging.
+3. Scope crawls aggressively (`--limit`, `--include-paths`, `--exclude-paths`) when a crawl backend is used.
+4. Use schema-extraction agents only when structured output is required and that backend is already available.
+5. Treat autonomous browser/agent modes as a last resort and include timeout fallback logic.
+6. Save host search/fetch results to `.researches/<timestamp>/` for reproducibility. Firecrawl dirs are optional.
+7. If a specialized capability is needed but unavailable, note the gap and finish with host tools.
 8. **Formulate queries before launching searches.** Specific, disambiguated queries return better results than vague ones. Reformulate rather than fetching more pages on poor results.
 9. **Evaluate sources before deep-reading.** Prioritize official docs, GitHub repos, and recent version-qualified sources. Ignore forums and SEO blogs unless no better source exists.
 10. **Stop searching after 2-3 failed reformulations.** Follow the Research Dead End Protocol: classify the failure, switch strategy (site-qualified search, error-quote, version-qualified), document the gap, and escalate rather than extrapolate. Never continue a failing approach.
-11. **Reformulate queries before switching tools.** If `web_search` returns poor results, `firecrawl search` with the same query will also return poor results. The query is the problem, not the tool.
+11. **Reformulate queries before switching tools.** If host search returns poor results, another search backend with the same query will also return poor results. The query is the problem, not the tool.
 
 ## Script Inventory
 
 | Script | Purpose | Key flags |
 |--------|---------|-----------|
 | `scripts/init-research-session.ts` | Bootstrap a timestamped research session directory | `--query`, `--metadata` |
-| `scripts/save-research.ts` | Import Firecrawl artifacts into a session | `--query`, `--results`, `--results-dir`, `--session-dir`, `--list` |
-| `scripts/save-web-research.ts` | Import web_search/web_fetch results into a session; content cleaning enabled by default for fetch/hybrid (`--no-clean` disables) | `--query`, `--source`, `--results`, `--content`, `--url`, `--clean`, `--no-clean`, `--session-dir`, `--metadata` |
+| `scripts/save-research.ts` | Import specialized-backend artifacts (Firecrawl dumps if used) into a session | `--query`, `--results`, `--results-dir`, `--session-dir`, `--list` |
+| `scripts/save-web-research.ts` | Import host search/fetch results into a session; content cleaning enabled by default for fetch/hybrid (`--no-clean` disables) | `--query`, `--source`, `--results`, `--content`, `--url`, `--clean`, `--no-clean`, `--session-dir`, `--metadata` |
 | `scripts/clean-web-content.ts` | Strip navigation chrome, cookie banners, footers, edit links, feedback prompts, copy buttons, pagination, inline TOCs, back-to-top links, sponsor sections, social prompts, newsletter CTAs from web content | `--content`, `--file`, `--output`, `--source`, `--no-cookie`, `--no-nav`, `--no-footer`, `--no-social`, `--no-newsletter`, `--no-edit-links`, `--no-feedback`, `--no-related`, `--no-copy-buttons`, `--no-pagination`, `--no-toc`, `--no-back-to-top`, `--no-sponsors`, `--no-whitespace` |
 | `scripts/clean-web-content.test.ts` | Regression tests for content cleaning: 10 removal tests + 8 false-positive guards | Run: `npx tsx .agents/skills/research-online/scripts/clean-web-content.test.ts` |
 | `scripts/consolidate-research.ts` | Deduplicate and merge reports into `consolidated.md` + `consolidated.json`. Content cleaning enabled by default; use `--no-clean` for raw output. Auto-discovers all artifact dirs with `--session-dir` or `--auto-session` | `--session-dir`, `--auto-session`, `--input-dir`, `--input-file`, `--query`, `--format`, `--no-clean`, `--no-dedupe`, `--no-publish`, `--output` |
@@ -690,16 +688,16 @@ The `references/` directory contains 6 hand-authored synthesis files. No subfold
 |------|---------|
 | `consolidation-patterns.md` | Six consolidation strategies for merging subagent findings, plus deduplication and validation checklists |
 | `github-repository-doc-archival.md` | Hybrid archival pattern for GitHub repo docs: canonical markdown, rendered HTML, and optional screenshots |
-| `harness-patterns.md` | Ten harness-worker patterns: 6 Firecrawl patterns for parallelizing research, 4 hybrid patterns combining web_search/web_fetch discovery with Firecrawl deep extraction, plus session directory reference |
+| `harness-patterns.md` | Harness-worker patterns: host search/fetch parallelization (default), optional specialized-backend patterns, plus session directory reference |
 | `query-formulation.md` | Query formulation quick-reference: reformulation techniques, domain-specific patterns, query anatomy, anti-patterns, and phase-specific guidance |
 | `source-evaluation.md` | Source evaluation quick-reference: 5-signal heuristic, domain authority cheat sheet, version-qualified query patterns, recency signals, red flags, and reformulation guidance |
-| `tool-selection.md` | Firecrawl CLI command decision tree, flag summary, and 7 reusable command patterns with cost guardrails |
+| `tool-selection.md` | Host-first tool decision tree; optional Firecrawl CLI command patterns and cost guardrails when that backend is present |
 
 ## Guidance Alignment
 
 - Apply repository guidance consistently with `AGENTS.md`.
 - If this skill file is updated, run `npm run skills:sync` so IDEs pick up the new version immediately.
-- Snapshot verified: 2026-04-30. Verify Firecrawl CLI behavior with `firecrawl --help` before relying on command syntax for newly released versions.
+- Verify specialized-backend CLI behavior with that tool's `--help` before relying on command syntax for newly released versions. Only load that path when the backend is already available.
 
 ## Temporary Files
 

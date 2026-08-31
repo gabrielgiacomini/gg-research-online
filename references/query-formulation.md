@@ -2,7 +2,7 @@
 
 > **Snapshot age:** 2026-05-18. Verify relevance against current search engine behavior before relying on specific query patterns.
 
-Use this reference when formulating search queries for `web_search` and Firecrawl `search`. Apply the principles from SKILL.md → Research Methodology → Query Formulation, then use the patterns and examples below to construct effective queries.
+Use this reference when formulating search queries for host `web_search` (or any equivalent search backend). Apply the principles from SKILL.md → Research Methodology → Query Formulation, then use the patterns and examples below to construct effective queries. Query quality is independent of which search tool runs.
 
 ## Core Principles
 
@@ -128,7 +128,7 @@ Outdated results?
 Low authority?
   → Add "site:docs.*" or "site:github.com/*"
   → Add "official" or "reference" qualifier
-  → Switch to Firecrawl for targeted extraction
+  → Fetch the official docs URL directly; do not switch search backends with the same query
 
 After 2-3 reformulations with no improvement:
   → Note the gap in synthesis
@@ -187,25 +187,26 @@ Outcome:    Official TypeScript handbook directly with canonical examples
 
 ## Phase-Specific Guidance
 
-### Phase 1 (web_search discovery)
+### Phase 1 (host search discovery)
 
 - Use 2-3 specific terms (e.g., `"drizzle pgPool2 config"`)
 - Scan titles and snippets before deep-reading
-- Select the 1-2 most relevant URLs for `web_fetch`
+- Select the 1-2 most relevant URLs for host `web_fetch`
 - Save all results with `save-web-research.ts` for reproducibility
 
-### Phase 2 (Firecrawl deep extraction)
+### Phase 2 (optional specialized extraction)
 
+- Only if host fetch is insufficient and a specialized backend is already available
 - Target specific pages identified in Phase 1
-- Use `firecrawl scrape <url> --only-main-content` for clean extraction
-- Use `firecrawl map <site-root> --search "<topic>"` for site structure
-- Save outputs to `.researches/<timestamp>/firecrawl/`
+- Example (Firecrawl, if present): `firecrawl scrape <url> --only-main-content`
+- Example (Firecrawl, if present): `firecrawl map <site-root> --search "<topic>"`
+- Save outputs to `.researches/<timestamp>/` (Firecrawl dirs only for Firecrawl runs)
 
 ## Cross-Reference
 
 - For query formulation principles, see SKILL.md → Research Methodology → Query Formulation.
 - For iterative refinement patterns, see SKILL.md → Research Methodology → Iterative Refinement Pattern.
 - For source evaluation heuristics, see `references/source-evaluation.md`.
-- For Firecrawl command syntax, see `references/tool-selection.md`.
+- For host-first tool selection and optional Firecrawl command syntax, see `references/tool-selection.md`.
 - For conflict resolution when sources disagree, see SKILL.md → Research Methodology → Conflict Resolution.
 - For chaining follow-up searches when initial results reveal a more specific question, see SKILL.md → Research Methodology → Research Chaining.

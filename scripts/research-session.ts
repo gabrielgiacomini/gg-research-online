@@ -1,7 +1,7 @@
 /**
  * @fileoverview Library that defines research session directory contracts, layout builders, and
  * file-system helpers. Owned by the `research-online/SKILL.md` skill; consumed by the
- * init-research-session CLI and Firecrawl orchestration workflows.
+ * init-research-session CLI and research orchestration workflows.
  *
  * @example
  * ```ts
@@ -25,9 +25,8 @@ export type Metadata = Record<string, unknown>;
 
 /** Directory layout produced by `buildResearchSessionLayout`; all paths are absolute.
  *
- * Includes directories for both Firecrawl artifacts and built-in web tool results,
- * supporting the hybrid two-phase research pattern where Phase 1 uses web_search/web_fetch
- * and Phase 2 uses Firecrawl.
+ * Host search/fetch dirs are the default artifact path. Firecrawl dirs exist for
+ * optional specialized-backend runs.
  */
 export type ResearchSessionLayout = {
   documentationDir: string;
@@ -41,9 +40,9 @@ export type ResearchSessionLayout = {
   metadataPath: string;
   sessionDir: string;
   subagentReportsDir: string;
-  /** Directory for web_search result artifacts (JSON). Created alongside firecrawl/ for hybrid sessions. */
+  /** Directory for host search result artifacts (JSON). */
   webSearchDir: string;
-  /** Directory for web_fetch result artifacts (markdown, HTML). Created alongside firecrawl/ for hybrid sessions. */
+  /** Directory for host fetch result artifacts (markdown, HTML). */
   webFetchDir: string;
   /** Directory for hybrid web research artifacts that combine search and fetch. */
   webResearchDir: string;

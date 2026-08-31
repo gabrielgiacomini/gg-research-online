@@ -1,7 +1,7 @@
 /**
- * @fileoverview CLI entry point that bootstraps a Firecrawl-backed research session directory.
+ * @fileoverview CLI entry point that bootstraps a timestamped research session directory.
  * Owned by the `research-online/SKILL.md` skill; agents invoke this to create timestamped
- * session folders before crawling.
+ * session folders before collecting sources.
  *
  * @example
  * ```bash
@@ -11,7 +11,7 @@
  * ```
  *
  * @testing CLI manual: npx tsx .agents/skills/research-online/scripts/init-research-session.ts --query "OpenRouter model pricing"
- * @see skills/research-online/SKILL.md - Skill workflow documentation for Firecrawl-backed research sessions.
+ * @see skills/research-online/SKILL.md - Skill workflow documentation for research sessions.
  * @documentation reviewed=2026-04-30 standard=FILE_OVERVIEW_STANDARDS_TYPESCRIPT@3
  */
 

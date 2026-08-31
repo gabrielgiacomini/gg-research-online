@@ -1,12 +1,10 @@
 /**
- * @fileoverview CLI script that persists built-in web tool research results (web_search,
- * web_fetch) into a timestamped session folder under `.researches/`. Bridges the
- * reproducibility gap between Firecrawl-only and hybrid research workflows by saving
- * web tool results alongside the same session layout used by `save-research.ts`.
+ * @fileoverview CLI script that persists host web search/fetch research results
+ * (web_search, web_fetch, or equivalent) into a timestamped session folder under
+ * `.researches/`. This is the default artifact path for research-online sessions.
  *
- * Owned by the `research-online/SKILL.md` skill; agents invoke this after
- * web_search/web_fetch calls when Firecrawl is unavailable or when simple queries
- * don't need Firecrawl-level extraction.
+ * Owned by the `research-online/SKILL.md` skill; agents invoke this after host
+ * search/fetch calls. Firecrawl is not required.
  *
  * @example
  * ```bash

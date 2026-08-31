@@ -1,12 +1,12 @@
 # Harness Research Patterns (CLI)
 
-Patterns for spawning harness workers to parallelize research using Firecrawl CLI, built-in web tools, or hybrid combinations.
+Patterns for spawning harness workers to parallelize research. Host search/fetch is the default path (Patterns 7–10). Firecrawl CLI patterns (1–6) apply only when that backend is already available.
 
-## Pattern 1: Parallel Site Research
+## Pattern 1: Parallel Site Research (optional Firecrawl)
 
-Research multiple sites simultaneously, one subagent per site.
+Research multiple sites simultaneously, one subagent per site. Use host `web_search` / `web_fetch` instead when Firecrawl is not present.
 
-**Use case:** Cross-site documentation or competitor comparison.
+**Use case:** Cross-site documentation or competitor comparison, when Firecrawl CLI is already available.
 
 ```bash
 # One subagent per site
@@ -88,17 +88,17 @@ Use `firecrawl agent` for discovery, then fan out deterministic commands.
 
 ---
 
-## Hybrid Patterns: Web Tools + Firecrawl
+## Default Patterns: Host Search and Fetch
 
-These patterns use `web_search` for Phase 1 discovery (zero-setup, always available) and
-Firecrawl for Phase 2 deep extraction (clean markdown, structured data, site mapping).
-Use `save-web-research.ts` and `consolidate-research.ts` with `--session-dir` to unify
-all artifacts into one session.
+These patterns use host `web_search` / `web_fetch` (or equivalent) for discovery and
+deep-reads. Specialized backends are optional Phase 2 only. Use `save-web-research.ts`
+and `consolidate-research.ts` with `--session-dir` to unify all artifacts into one session.
 
-### Pattern 7: Hybrid Search-Then-Scrape
+### Pattern 7: Search-Then-Fetch (default)
 
-Use `web_search` to discover relevant URLs, then Firecrawl to extract clean content from
-the most promising results.
+Use host `web_search` to discover relevant URLs, then host `web_fetch` on the most
+promising results. Optional Firecrawl scrape only if host fetch is insufficient and
+that CLI is already available.
 
 **Use case:** General research where you don't know which sites have the best information.
 
@@ -113,23 +113,21 @@ deep-read a subset.
 ```
 
 ```text
-Phase 1 — Discovery (built-in web tools, zero setup)
+Phase 1 — Discovery (host search/fetch)
   1. Init session: npx tsx scripts/init-research-session.ts --query "Better Auth vs NextAuth"
   2. web_search for topic, identify top 2-5 URLs
-  3. Save discovery results:
+  3. web_fetch the 1-2 most promising URLs
+  4. Save discovery results:
      npx tsx scripts/save-web-research.ts \
        --query "Better Auth vs NextAuth" \
        --source search \
        --content "{...search results JSON...}" \
        --session-dir "$SESSION_DIR"
 
-Phase 2 — Deep extraction (Firecrawl, targeted)
-  1. For each promising URL from Phase 1:
+Phase 2 — Optional specialized extraction
+  Only if host fetch is insufficient AND Firecrawl (or equivalent) is already available:
      firecrawl scrape "$URL" --only-main-content \
        -o "$SESSION_DIR/firecrawl/raw/$(slugify $URL).md"
-  2. Or batch with search:
-     firecrawl search "site:docs.example.com auth" --scrape --limit 5 \
-       -o "$SESSION_DIR/firecrawl/raw/auth-search.json"
 
 Consolidation
   npx tsx scripts/consolidate-research.ts \
@@ -138,8 +136,7 @@ Consolidation
     --format thematic
 ```
 
-**Skip Phase 2 when:** The web_search/web_fetch results already provide sufficient
-information for the query. No need to spend Firecrawl credits on simple lookups.
+**Skip Phase 2 when:** Host search/fetch already answers the query, or no specialized backend is available.
 
 ### Pattern 8: Parallel Discovery Workers
 
@@ -158,14 +155,14 @@ Workers (parallel discovery):
   Worker C: web_search "Drizzle ORM PostgreSQL best practices" → save --source search
   Worker D: web_fetch "https://orm.drizzle.team/docs/overview" → save --source fetch --url ...
 
-Selective deepening (only for promising URLs):
-  firecrawl scrape "https://orm.drizzle.team/docs/connect-overview" --only-main-content
+Selective deepening (host fetch; optional Firecrawl scrape if already available):
+  web_fetch "https://orm.drizzle.team/docs/connect-overview"
 
 Consolidation:
   npx tsx scripts/consolidate-research.ts --session-dir "$SESSION_DIR" --format thematic
 ```
 
-**Cost guardrail:** Each `web_search` call is free. Firecrawl credits are spent only on
+**Cost guardrail:** Prefer host search/fetch. Specialized-backend credits are spent only on
 the most promising sources after review, not on every search result.
 
 **Efficiency tip:** Have each worker scan its search results and only deep-read the
@@ -177,7 +174,7 @@ the most promising sources after review, not on every search result.
 After collecting artifacts from any combination of tools, use auto-session consolidation
 instead of manually specifying input directories.
 
-**Use case:** Mixed Firecrawl + web tool research where you want one-click consolidation.
+**Use case:** Mixed host-tool (and optional specialized-backend) research where you want one-click consolidation.
 
 ```bash
 # After saving web and/or Firecrawl artifacts to a session:
@@ -197,12 +194,11 @@ npx tsx scripts/consolidate-research.ts \
 artifacts from `firecrawl/raw`, `firecrawl/reports`, `web-search`, `web-fetch`, and
 `web-research` directories.
 
-### Pattern 10: Web-Only Fallback
+### Pattern 10: Host-Only Session (default complete path)
 
-When Firecrawl is unavailable or credits are exhausted, complete research using only
-built-in web tools.
+Complete research using only host search and fetch. This is the default path, not a fallback.
 
-**Use case:** Firecrawl CLI not installed, API key expired, or credit budget reached.
+**Use case:** Any harness that exposes search or fetch. No specialized backend required.
 
 ```text
 Phase 1 — Discovery:
@@ -226,9 +222,7 @@ Consolidation:
     --format source-based
 ```
 
-**Limitations vs Firecrawl:** No site mapping, no structured extraction, no JavaScript
-rendering. Content cleanliness depends on source page quality. Best for text-heavy docs
-and simple pages.
+Host-only sessions cannot map a site, run schema extraction, or drive a JS browser. Note those gaps in the synthesis when they matter. Do not treat the session as incomplete because Firecrawl was not used.
 
 ## Session Directory Reference
 
@@ -236,11 +230,11 @@ All patterns above save artifacts into a shared session directory with this stru
 
 ```text
 .researches/<timestamp>/
-├── firecrawl/
-│   ├── raw/              ← Firecrawl scrape/search/crawl raw output
-│   └── reports/          ← Processed Firecrawl reports (JSON/MD)
-├── web-search/           ← web_search result artifacts (JSON)
-├── web-fetch/            ← web_fetch result artifacts (markdown, HTML)
+├── firecrawl/            ← only if a Firecrawl backend was used
+│   ├── raw/              ← scrape/search/crawl raw output
+│   └── reports/          ← Processed reports (JSON/MD)
+├── web-search/           ← host search artifacts (JSON)
+├── web-fetch/            ← host fetch artifacts (markdown, HTML)
 ├── web-research/         ← Hybrid search+fetch combined artifacts
 ├── documentation/
 │   ├── html/              ← Rendered documentation pages
@@ -258,7 +252,7 @@ All patterns above save artifacts into a shared session directory with this stru
 | Command | Purpose |
 | ------- | ------- |
 | `npx tsx scripts/init-research-session.ts --query "..."` | Create a new session |
-| `npx tsx scripts/save-research.ts --query "..." --results ...` | Save Firecrawl artifacts |
-| `npx tsx scripts/save-web-research.ts --query "..." --source search \| fetch \| hybrid` | Save web tool artifacts |
+| `npx tsx scripts/save-research.ts --query "..." --results ...` | Save specialized-backend artifacts (if used) |
+| `npx tsx scripts/save-web-research.ts --query "..." --source search \| fetch \| hybrid` | Save host search/fetch artifacts |
 | `npx tsx scripts/consolidate-research.ts --session-dir ... --query "..."` | Consolidate session (auto-discovers all dir types) |
 | `npx tsx scripts/consolidate-research.ts --auto-session --query "..."` | Consolidate latest session |

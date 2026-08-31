@@ -1,5 +1,7 @@
 # research-online
-A Claude Code skill that runs end-to-end online research sessions using Firecrawl CLI as the primary retrieval layer. It initialises a timestamped artifact directory, collects multi-source evidence, deduplicates and consolidates findings, and publishes a reproducible session payload — returning source-backed answers with explicit confidence notes.
+A skill that runs end-to-end online research sessions using **whatever web search and page-fetch tools the current harness exposes**. It initialises a timestamped artifact directory, collects multi-source evidence, deduplicates and consolidates findings, and publishes a reproducible session payload — returning source-backed answers with explicit confidence notes.
+
+Host search/fetch is the default path. Firecrawl CLI (map, crawl, schema extraction, browser) is an optional specialized backend when it is already available — not a prerequisite.
 
 ## Install
 
@@ -34,7 +36,7 @@ Restart your agent or reload skills after installation. See the parent [`skills`
 - Need to verify a claim against live web sources.
 - Working with GitHub repository documentation that needs faithful archival.
 
-Skip when the question can be answered from the local codebase or committed documentation, when the user explicitly asks for opinion or creative writing without factual grounding, or when a sibling skill (e.g. `firecrawl`) already covers the specific tool surface in isolation.
+Skip when the question can be answered from the local codebase or committed documentation, when the user explicitly asks for opinion or creative writing without factual grounding, or when a sibling skill already covers a specific tool surface in isolation (this skill still owns the research session).
 
 ## How it operates
 
@@ -43,8 +45,8 @@ Skip when the question can be answered from the local codebase or committed docu
 | Input | Description |
 |-------|-------------|
 | Research question | Free-text query passed via `--query` to session-init and consolidation scripts. |
-| Target sources | Optional: explicit URLs for `scrape`/`crawl`, or left open for `search`-driven discovery. |
-| Freshness requirements | Optional: `--max-age` hint passed to Firecrawl CLI to allow cache hits during iterative runs. |
+| Target sources | Optional: explicit URLs for fetch/scrape/crawl, or left open for search-driven discovery. |
+| Freshness requirements | Optional: cache-age hint for a specialized scrape backend during iterative runs. |
 | GitHub repo target | Optional: `--github-repo` and `--branch` flags for the archival script path. |
 | Format preference | Optional: `thematic`, `chronological`, or `source` passed to `consolidate-research.ts`. |
 
@@ -53,8 +55,11 @@ Skip when the question can be answered from the local codebase or committed docu
 | Output | Location |
 |--------|----------|
 | Session metadata | `.researches/<timestamp>/metadata.json` |
-| Raw Firecrawl dumps | `.researches/<timestamp>/firecrawl/raw/` |
-| Per-source reports | `.researches/<timestamp>/firecrawl/reports/` |
+| Host search artifacts | `.researches/<timestamp>/web-search/` |
+| Host fetch artifacts | `.researches/<timestamp>/web-fetch/` |
+| Hybrid search+fetch artifacts | `.researches/<timestamp>/web-research/` |
+| Specialized-backend dumps (optional) | `.researches/<timestamp>/firecrawl/raw/` (only if Firecrawl was used) |
+| Specialized-backend reports (optional) | `.researches/<timestamp>/firecrawl/reports/` |
 | Documentation markdown | `.researches/<timestamp>/documentation/markdown/` |
 | Documentation HTML | `.researches/<timestamp>/documentation/html/` |
 | Full-page screenshots | `.researches/<timestamp>/documentation/screenshots/full-page/` |
@@ -64,26 +69,35 @@ Skip when the question can be answered from the local codebase or committed docu
 
 ### External commands
 
+Default path (any harness that exposes search or fetch):
+
 | Command | Purpose |
 |---------|---------|
-| `firecrawl --status` | Pre-flight check; must succeed before any collection step. |
-| `firecrawl search` | Discovery phase — locate candidate URLs from a query. |
+| Host `web_search` (or equivalent) | Discovery — locate candidate URLs from a query. Names vary by harness. |
+| Host `web_fetch` (or equivalent) | Single-page read of a known URL. Names vary (`web_fetch`, `WebFetch`, `open_page`, MCP fetch). |
+| `npm run research:session:init` | Bootstraps the timestamped session directory and writes `metadata.json`. |
+| `npx tsx scripts/save-web-research.ts` | Persists host search/fetch results into the session. |
+| `npx tsx scripts/consolidate-research.ts` | Deduplicates and merges reports into `consolidated.md` + `consolidated.json`. |
+| `npx tsx scripts/finalize-research-session.ts` | Publishes the completed session with a scoped commit/push. |
+| `npx tsx scripts/archive-github-repo-docs.ts` | Archives GitHub repo docs via raw URLs + optional screenshots, bypassing blob-page noise. |
+
+Optional specialized backend (only if already installed and authenticated):
+
+| Command | Purpose |
+|---------|---------|
 | `firecrawl map` | Site structure enumeration for known domains. |
 | `firecrawl scrape` | Single-page extraction in markdown and/or HTML. |
 | `firecrawl crawl` | Multi-page recursive extraction with `--limit` and `--max-depth` guards. |
 | `firecrawl agent` | Autonomous structured extraction; used only when a schema is required or deterministic commands fail. |
 | `firecrawl browser` | JS-heavy or interactive page fallback; version-dependent — prefer explicit `firecrawl browser execute --node …` over shorthand. |
-| `npm run research:session:init` | Bootstraps the timestamped session directory and writes `metadata.json`. |
-| `npx tsx scripts/consolidate-research.ts` | Deduplicates and merges reports into `consolidated.md` + `consolidated.json`. |
-| `npx tsx scripts/finalize-research-session.ts` | Publishes the completed session with a scoped commit/push. |
-| `npx tsx scripts/archive-github-repo-docs.ts` | Archives GitHub repo docs via raw URLs + optional screenshots, bypassing blob-page noise. |
+| `firecrawl search` | Alternate discovery when host search is insufficient. |
 
 ### Side effects
 
 - **File writes** — session directory tree created under `.researches/<timestamp>/` in the working project.
-- **Network requests** — Firecrawl API calls for every `search`, `scrape`, `map`, `crawl`, `agent`, or `browser` invocation; costs real API credits.
+- **Network requests** — host search/fetch calls; optional Firecrawl API calls only if that backend is used (those cost real API credits).
 - **Git commits/push** — `finalize-research-session.ts` commits and pushes the session folder when `--dry-run` is not set.
-- **Environment variable** — `FIRECRAWL_OUTPUT_DIR` is set per session to route raw outputs; `FIRECRAWL_API_KEY` must be present in the shell.
+- **Environment variable** — `FIRECRAWL_OUTPUT_DIR` is set per session only when Firecrawl is actually used; `FIRECRAWL_API_KEY` is not required for the default path.
 
 ### Mode toggles
 
@@ -92,30 +106,23 @@ Skip when the question can be answered from the local codebase or committed docu
 | `--no-publish` | Skip commit/push at finalize step; keeps session local. |
 | `--dry-run` | Print what would be committed without writing to remote. |
 | `--no-dedupe` | Disable deduplication in consolidation; useful when source overlap is intentional. |
-| `--max-age <seconds>` | Allow Firecrawl cache hits; lowers cost during iterative debugging. |
+| `--max-age <seconds>` | Allow specialized-backend cache hits; lowers cost during iterative debugging (Firecrawl path only). |
 | `--screenshot-mode` | Enable full-page screenshot capture in the archival script. |
 
 ## Operational flow
 
 ```mermaid
 flowchart TD
-    A([Research question received]) --> B[firecrawl --status\npre-flight check]
-    B -->|fail| C[Fix install / API key\nthen retry]
-    C --> B
-    B -->|pass| D[npm run research:session:init\ncreate .researches/timestamp/]
+    A([Research question received]) --> D[npm run research:session:init\ncreate .researches/timestamp/]
     D --> E{Classify task}
-    E -->|Unknown URLs| F[firecrawl search\ndiscover candidate URLs]
-    E -->|Known domain| G[firecrawl map\nenumerate site structure]
-    E -->|Known URLs| H[firecrawl scrape\nextract markdown + HTML]
+    E -->|Unknown URLs| F[Host web_search\ndiscover candidate URLs]
+    E -->|Known URLs| H[Host web_fetch\nread page]
     E -->|GitHub repo docs| I[archive-github-repo-docs.ts\nraw URLs + optional screenshots]
     F --> H
-    G --> H
-    H -->|JS-heavy page| J[firecrawl browser\nfallback extraction]
-    H -->|Schema required| K[firecrawl agent\nstructured extraction]
-    H -->|Standard output| L[Save raw JSON to\nfirecrawl/raw/]
-    J --> L
-    K --> L
+    H --> L[save-web-research.ts\ninto web-search / web-fetch]
     I --> L
+    H -->|Need map/crawl/schema/browser\nand backend already available| J[Optional specialized backend\ne.g. Firecrawl]
+    J --> L
     L --> M[consolidate-research.ts\ndeduplicate + merge reports]
     M --> N[Write consolidated.md\n+ consolidated.json]
     N --> O[finalize-research-session.ts\ncommit + push session folder]
@@ -136,8 +143,8 @@ research-online/
 ├── references/
 │   ├── consolidation-patterns.md    # Six strategies for merging subagent findings
 │   ├── github-repository-doc-archival.md  # Hybrid archival pattern for GitHub repos
-│   ├── harness-patterns.md          # Six patterns for parallelising Firecrawl research
-│   └── tool-selection.md            # CLI command decision tree + flag summary
+│   ├── harness-patterns.md          # Parallelisation patterns (host search/fetch default)
+│   └── tool-selection.md            # Host-first decision tree + optional Firecrawl commands
 └── scripts/
     ├── init-research-session.ts     # Bootstrap timestamped session directory
     ├── save-research.ts             # Import pre-existing temp files into a session
@@ -150,46 +157,40 @@ research-online/
 ## Quick start
 
 ```bash
-# 1. Verify Firecrawl is ready
-firecrawl --status
-
-# 2. Initialise a session
+# 1. Initialise a session (no Firecrawl pre-flight)
 npm run research:session:init -- --query "What changed in Next.js 15?"
 
-# 3. Discover sources
-export FIRECRAWL_OUTPUT_DIR=".researches/<timestamp>/firecrawl/raw"
-firecrawl search "site:nextjs.org Next.js 15" --scrape --limit 10 --json \
-  -o "$FIRECRAWL_OUTPUT_DIR/search.json"
+# 2. Discover with the host's search tool, then fetch 1–2 URLs.
+#    Persist results (names of host tools vary by harness):
+npx tsx .agents/skills/research-online/scripts/save-web-research.ts \
+  --query "What changed in Next.js 15?" \
+  --source search \
+  --content '{"results": [...]}'
 
-# 4. Deep-dive a page (dual representation)
-firecrawl scrape "https://nextjs.org/blog/next-15" --format markdown \
-  -o ".researches/<timestamp>/documentation/markdown/next-15.md"
-firecrawl scrape "https://nextjs.org/blog/next-15" --format html \
-  -o ".researches/<timestamp>/documentation/html/next-15.html"
-
-# 5. Consolidate
-npx tsx .claude/skills/research-online/scripts/consolidate-research.ts \
-  --input-dir .researches/<timestamp>/firecrawl/reports \
+# 3. Consolidate whatever the session collected
+npx tsx .agents/skills/research-online/scripts/consolidate-research.ts \
+  --auto-session \
   --query "What changed in Next.js 15?" \
   --format thematic
 
-# 6. Publish
-npx tsx .claude/skills/research-online/scripts/finalize-research-session.ts \
+# 4. Publish
+npx tsx .agents/skills/research-online/scripts/finalize-research-session.ts \
   --latest
 ```
 
 ## Resources
 
-- [firecrawl](https://github.com/gg-skills/firecrawl) — low-level CLI primer; load on-demand for command syntax, flag semantics, install/auth steps.
-- [Firecrawl documentation](https://docs.firecrawl.dev) — upstream reference.
-- `references/tool-selection.md` — command decision tree and cost guardrails.
+- Host search/fetch tools provided by the current harness (required default path).
+- [firecrawl](https://github.com/gg-skills/firecrawl) — optional low-level CLI primer; load only when that backend is already available and you need command syntax.
+- [Firecrawl documentation](https://docs.firecrawl.dev) — upstream reference for the optional backend.
+- `references/tool-selection.md` — host-first decision tree and optional Firecrawl command patterns.
 - `references/harness-patterns.md` — parallelisation patterns for high fan-out research.
 
 ## Caveats
 
-- **CLI-first policy is non-negotiable.** The built-in `web` tool is a fallback of last resort; always attempt Firecrawl CLI first and document why it was insufficient if you fall back.
-- **Firecrawl API credits are real money.** Scope crawls with `--limit` and `--max-depth`; use `--max-age` to hit cache on iterative runs; escalate to `agent`/`browser` only when cheaper commands fail.
+- **Host search/fetch is the default.** Do not require Firecrawl or any other named vendor. Specialized backends are optional extras when already available.
+- **Never block on backend setup.** Missing Firecrawl is not a research failure. Complete with host tools and note any capability gap.
+- **Specialized-backend credits are real money.** If Firecrawl (or equivalent) is used, scope crawls with `--limit` and `--max-depth`; escalate to `agent`/`browser` only when cheaper commands fail.
 - **Dual representation contract.** Documentation targets must be saved in both markdown and HTML; markdown-only is incomplete.
 - **GitHub blob pages are noisy.** Use `raw.githubusercontent.com` URLs or `archive-github-repo-docs.ts` — never scrape the blob-rendered page as canonical source text.
-- **`firecrawl browser` shorthand is fragile.** It is version-dependent; prefer `firecrawl browser execute --node …` explicitly.
-- **Snapshot age.** SKILL.md was verified 2026-04-30. Validate Firecrawl CLI flag behaviour with `firecrawl --help` before relying on command syntax for newly released versions.
+- **`firecrawl browser` shorthand is fragile.** It is version-dependent; prefer `firecrawl browser execute --node …` explicitly — only relevant when that CLI is in use.

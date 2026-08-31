@@ -1,6 +1,6 @@
 /**
- * @fileoverview CLI that consolidates research results from Firecrawl and/or
- * built-in web tool (web_search, web_fetch) artifacts into a single markdown
+ * @fileoverview CLI that consolidates research results from host search/fetch
+ * artifacts (and optional Firecrawl dumps if present) into a single markdown
  * report with optional deduplication. Content cleaning is **enabled by
  * default** — navigation chrome, cookie banners, footers, and social prompts
  * are stripped from fetch content during consolidation. Use `--no-clean` to

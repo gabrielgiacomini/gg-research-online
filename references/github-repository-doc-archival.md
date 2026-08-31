@@ -1,6 +1,6 @@
 # GitHub Repository Documentation Archival
 
-Use this pattern when research targets documentation that lives as tracked files inside a GitHub repository, especially when you already cloned the repo locally.
+Use this pattern when research targets documentation that lives as tracked files inside a GitHub repository, especially when you already cloned the repo locally. Canonical markdown and rendered HTML do not require Firecrawl. Screenshot capture via Firecrawl is optional and only applies when that CLI is already available.
 
 ## Why This Hybrid Pattern Exists
 
@@ -20,7 +20,7 @@ For each repository documentation file:
 
 1. **Canonical markdown**: copy directly from the local clone, or fetch from `raw.githubusercontent.com`.
 2. **Rendered HTML fidelity**: fetch the GitHub blob page HTML and save it as `<relative-path>.html`.
-3. **Visual evidence**: for docs and markdown pages, use `firecrawl scrape "<blob-url>" --format screenshot --json`. For source code files, skip screenshots by default.
+3. **Visual evidence (optional):** for docs and markdown pages, if Firecrawl is already available, use `firecrawl scrape "<blob-url>" --format screenshot --json`. Otherwise skip screenshots. For source code files, skip screenshots by default.
 
 This yields three complementary artifacts: exact source text, exact rendered GitHub HTML, and optional Firecrawl-captured screenshot evidence plus metadata JSON.
 
