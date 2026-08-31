@@ -397,7 +397,7 @@ When an initial search succeeds but reveals a more specific question, chain foll
 
 1. **Extract the specific question.** The initial results answered the broad question but revealed a narrower, deeper question ("How does X work?" → "How does X handle Y specifically?"). Write the follow-up as a new one-sentence research question.
 2. **Carry forward what you already know.** Include version numbers, framework names, and key terms from the initial results in the follow-up query. This makes follow-up queries more specific and more likely to return relevant results.
-3. **Apply a tighter sufficiency rule.** You're now in the second or third search. One authoritative source that directly answers the follow-up question is sufficient \u2014 you don't need to rediscover the broad context.
+3. **Apply a tighter sufficiency rule.** You're now in the second or third search. One authoritative source that directly answers the follow-up question is sufficient — you don't need to rediscover the broad context.
 
 ```text
 Chain example:
@@ -555,7 +555,7 @@ Deliver research results using this structure:
 
 Omit sections with no content (e.g., no conflicting evidence → omit that section).
 
-After a research session is complete, include `Next steps:` followed by options in this format:
+After a research session is complete, include `Next steps:` as `CHOOSEABLE_OPTIONS` presented per `chooseable-options/SKILL.md` (printed tokens **and** the harness Ask User picker when that tool is available):
 
 - `ACTION_NAME_IN_SCREAMING_SNAKE_CASE`: Description of what will be done if chosen.
 
